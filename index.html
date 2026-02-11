@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نحن هنا | We Are Here</title>
+    <title>نحن هنا | 3D Dice</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -30,22 +30,69 @@
             box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
         }
         .btn-action:active { transform: scale(0.96); }
-        
-        .btn-cancel {
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-        }
-
-        .input-glass {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 1rem;
-            transition: all 0.3s;
-        }
-        .input-glass:focus { border-color: var(--primary); outline: none; }
 
         .loader-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- 3D DICE STYLES --- */
+        .scene {
+            width: 80px;
+            height: 80px;
+            perspective: 400px;
+            margin: 0 auto;
+        }
+
+        .cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease-out;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 0 10px #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0; /* Hide text if any */
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            background: #1e293b;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Face positioning */
+        .face-1 { transform: rotateY(0deg) translateZ(40px); }
+        .face-2 { transform: rotateY(180deg) translateZ(40px); }
+        .face-3 { transform: rotateY(90deg) translateZ(40px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(40px); }
+        .face-5 { transform: rotateX(90deg) translateZ(40px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(40px); }
+
+        /* Dot positioning logic */
+        /* Face 1 */ .face-1 .dot:nth-child(1) { top: 33px; left: 33px; background: #ef4444; } /* Red dot for 1 */
+        /* Face 2 */ .face-2 .dot:nth-child(1) { top: 15px; left: 15px; } .face-2 .dot:nth-child(2) { bottom: 15px; right: 15px; }
+        /* Face 3 */ .face-3 .dot:nth-child(1) { top: 15px; left: 15px; } .face-3 .dot:nth-child(2) { top: 33px; left: 33px; } .face-3 .dot:nth-child(3) { bottom: 15px; right: 15px; }
+        /* Face 4 */ .face-4 .dot:nth-child(1) { top: 15px; left: 15px; } .face-4 .dot:nth-child(2) { top: 15px; right: 15px; } .face-4 .dot:nth-child(3) { bottom: 15px; left: 15px; } .face-4 .dot:nth-child(4) { bottom: 15px; right: 15px; }
+        /* Face 5 */ .face-5 .dot:nth-child(1) { top: 15px; left: 15px; } .face-5 .dot:nth-child(2) { top: 15px; right: 15px; } .face-5 .dot:nth-child(3) { bottom: 15px; left: 15px; } .face-5 .dot:nth-child(4) { bottom: 15px; right: 15px; } .face-5 .dot:nth-child(5) { top: 33px; left: 33px; }
+        /* Face 6 */ .face-6 .dot:nth-child(1) { top: 12px; left: 15px; } .face-6 .dot:nth-child(2) { top: 12px; right: 15px; } .face-6 .dot:nth-child(3) { top: 33px; left: 15px; } .face-6 .dot:nth-child(4) { top: 33px; right: 15px; } .face-6 .dot:nth-child(5) { bottom: 12px; left: 15px; } .face-6 .dot:nth-child(6) { bottom: 12px; right: 15px; }
+
+        /* Animation Classes */
+        .rolling { animation: spinCube 0.6s linear infinite; }
+        @keyframes spinCube { 0% { transform: rotateX(0) rotateY(0); } 100% { transform: rotateX(360deg) rotateY(360deg); } }
+
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -88,7 +135,6 @@
 
         <!-- Lobby -->
         <div id="view-lobby" class="space-y-6">
-            <!-- Bet Selector -->
             <div class="fluid-glass p-6">
                 <label class="text-xs text-gray-400 font-bold block mb-3">اختر قيمة التحدي</label>
                 <div class="grid grid-cols-3 gap-2">
@@ -103,7 +149,6 @@
                 </div>
             </div>
 
-            <!-- Actions -->
             <button onclick="findRandomGame()" class="btn-action w-full py-5 rounded-2xl font-black text-xl shadow-lg relative overflow-hidden group">
                 <span class="relative z-10 flex items-center justify-center gap-3"><i class="fas fa-search"></i> بحث عشوائي سريع</span>
             </button>
@@ -111,10 +156,10 @@
             <div class="fluid-glass p-6 text-center">
                 <p class="text-xs text-gray-400 mb-4 font-bold">أو ادخل رقم صديقك للعب معه</p>
                 <div class="flex gap-2">
-                    <input id="friend-id" type="number" placeholder="رقم الصديق (مثلاً 5)" class="input-glass flex-1 p-3 text-center font-black text-lg">
+                    <input id="friend-id" type="number" placeholder="رقم الصديق" class="w-full bg-black/30 p-3 rounded-xl border border-white/10 text-center font-black text-lg outline-none focus:border-blue-500">
                     <button onclick="joinFriend()" class="bg-slate-700 hover:bg-slate-600 px-6 rounded-xl font-bold transition"><i class="fas fa-play"></i></button>
                 </div>
-                <p class="text-[10px] text-gray-500 mt-2">رقمك الخاص هو: <span class="text-blue-400 font-bold u-id-disp"></span></p>
+                <p class="text-[10px] text-gray-500 mt-2">رقمك الخاص: <span class="text-blue-400 font-bold u-id-disp"></span></p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -133,22 +178,20 @@
         <div id="view-waiting" class="hidden text-center py-20">
             <div class="loader-spin text-6xl text-blue-500 mb-8 mx-auto w-fit"><i class="fas fa-circle-notch"></i></div>
             <h2 class="text-2xl font-black mb-2">جاري البحث...</h2>
-            <p class="text-gray-400 text-sm mb-12">نبحث لك عن منافس أو ننتظر صديقك في الغرفة <span id="wait-room-id" class="text-blue-400 font-bold"></span></p>
-            <button onclick="cancelSearch()" class="btn-cancel px-10 py-3 rounded-full font-bold">إلغاء وانسحاب</button>
+            <p class="text-gray-400 text-sm mb-12">نبحث لك عن منافس في الغرفة <span id="wait-room-id" class="text-blue-400 font-bold"></span></p>
+            <button onclick="cancelSearch()" class="bg-red-600 hover:bg-red-700 px-10 py-3 rounded-full font-bold shadow-lg transition">إلغاء وانسحاب</button>
         </div>
 
-        <!-- Game Screen -->
+        <!-- Game Screen (3D Dice Arena) -->
         <div id="view-game" class="hidden">
-            <div id="game-board" class="fluid-glass p-6 min-h-[400px]"></div>
+            <div id="game-board" class="min-h-[400px]"></div>
         </div>
 
         <!-- Store View -->
         <div id="view-store" class="hidden space-y-6">
             <button onclick="switchView('lobby')" class="text-gray-400 font-bold mb-4 flex items-center gap-2"><i class="fas fa-arrow-right"></i> رجوع</button>
             <h2 class="text-2xl font-black mb-6">شراء الجواهر</h2>
-            <div class="space-y-3" id="store-list">
-                <!-- Items injected via JS -->
-            </div>
+            <div class="space-y-3" id="store-list"></div>
         </div>
 
         <!-- Withdraw View -->
@@ -169,7 +212,7 @@
     <div id="modal-code" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6">
         <div class="fluid-glass w-full max-w-sm p-8 text-center">
             <h3 class="font-bold mb-6 text-lg" id="modal-title">تفعيل الكارت</h3>
-            <input id="inp-code" type="text" placeholder="*133*رمز_الكارت#" class="input-glass w-full p-4 text-center font-mono text-xl mb-6">
+            <input id="inp-code" type="text" placeholder="*133*رمز_الكارت#" class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-center font-mono text-xl mb-6 outline-none focus:border-blue-500">
             <button onclick="submitVoucher()" class="btn-action w-full py-4 rounded-xl font-bold">تأكيد</button>
             <button onclick="document.getElementById('modal-code').classList.add('hidden')" class="mt-4 text-gray-500 text-sm">إلغاء</button>
         </div>
@@ -178,7 +221,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, where, getDocs, addDoc, runTransaction, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, where, getDocs, addDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAuWgWjxvlwVLt_nxoA0g_Z_k21Yn2MuJ8",
@@ -193,7 +236,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        const appId = 'we-are-here-pro-v4'; // New ID for clean start
+        const appId = 'we-are-here-3d-final';
 
         let user = null;
         let userData = null;
@@ -201,7 +244,6 @@
         let activeGameId = null;
         let gameListener = null;
 
-        // --- Init & Auth ---
         setPersistence(auth, browserLocalPersistence);
 
         onAuthStateChanged(auth, async (u) => {
@@ -229,7 +271,6 @@
                     userData = snap.data();
                     updateHeader();
                 } else {
-                    // Create New User with Sequential ID
                     await createNewUserWithId(userRef);
                 }
             });
@@ -247,15 +288,9 @@
                     } else {
                         transaction.set(counterRef, { current: 1 });
                     }
-                    transaction.set(userRef, { 
-                        balance: 500, // الهدية 500 فقط
-                        name: user.displayName, 
-                        photo: user.photoURL, 
-                        uid: user.uid,
-                        displayId: newId 
-                    });
+                    transaction.set(userRef, { balance: 500, name: user.displayName, photo: user.photoURL, uid: user.uid, displayId: newId });
                 });
-            } catch (e) { console.error("ID Gen Error", e); }
+            } catch (e) { console.error(e); }
         }
 
         function updateHeader() {
@@ -271,50 +306,63 @@
 
         window.setBet = (amount) => {
             currentBet = amount;
-            document.querySelectorAll('.bet-btn').forEach(b => {
-                b.classList.remove('ring-2', 'ring-blue-500', 'bg-slate-700');
-                b.classList.add('bg-slate-800');
-            });
+            document.querySelectorAll('.bet-btn').forEach(b => { b.classList.remove('ring-2', 'ring-blue-500', 'bg-slate-700'); b.classList.add('bg-slate-800'); });
             document.getElementById(`btn-${amount}`).classList.add('ring-2', 'ring-blue-500', 'bg-slate-700');
         };
-        // Set default
         window.setBet(500);
 
         window.switchView = (viewId) => {
-            ['lobby', 'waiting', 'game', 'store', 'withdraw'].forEach(v => 
-                document.getElementById(`view-${v}`).classList.add('hidden'));
+            ['lobby', 'waiting', 'game', 'store', 'withdraw'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
         };
 
-        // --- Core Matchmaking ---
-        
-        // 1. Random Search
+        // --- 3D Dice Helper Function ---
+        function createDiceHTML(rollValue, isRolling) {
+            // Mapping roll value to final rotation
+            const rotations = {
+                1: 'rotateY(0deg)',
+                2: 'rotateY(180deg)',
+                3: 'rotateY(-90deg)',
+                4: 'rotateY(90deg)',
+                5: 'rotateX(-90deg)',
+                6: 'rotateX(90deg)'
+            };
+            
+            // If rolling, add the animation class and random rotation style to override specific face
+            const style = isRolling ? '' : `transform: ${rotations[rollValue]}`;
+            const className = isRolling ? 'cube rolling' : 'cube';
+
+            return `
+                <div class="scene">
+                    <div class="${className}" style="${style}">
+                        <div class="cube-face face-1"><div class="dot"></div></div>
+                        <div class="cube-face face-2"><div class="dot"></div><div class="dot"></div></div>
+                        <div class="cube-face face-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                        <div class="cube-face face-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                        <div class="cube-face face-5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                        <div class="cube-face face-6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Matchmaking ---
         window.findRandomGame = async () => {
             if (userData.balance < currentBet) return alert("رصيدك غير كافٍ");
             window.switchView('waiting');
             document.getElementById('wait-room-id').innerText = "عشوائي";
 
-            // Query for waiting games
             const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
             const q = query(gamesRef, where("status", "==", "waiting"), where("bet", "==", currentBet));
-            
             const snapshot = await getDocs(q);
-            let foundGame = null;
             
-            snapshot.forEach(doc => {
-                // Don't join my own game
-                if (doc.data().p1.uid !== user.uid) foundGame = doc;
-            });
+            let foundGame = null;
+            snapshot.forEach(doc => { if (doc.data().p1.uid !== user.uid) foundGame = doc; });
 
-            if (foundGame) {
-                joinGame(foundGame.id);
-            } else {
-                // Create room with my ID
-                createGame(userData.displayId.toString());
-            }
+            if (foundGame) joinGame(foundGame.id);
+            else createGame(userData.displayId.toString());
         };
 
-        // 2. Play with Friend
         window.joinFriend = async () => {
             const friendId = document.getElementById('friend-id').value.trim();
             if (!friendId) return alert("ادخل رقم صديقك");
@@ -324,12 +372,11 @@
             const snap = await getDoc(gameRef);
 
             if (snap.exists() && snap.data().status === 'waiting') {
-                if (snap.data().bet !== currentBet) return alert(`صديقك يلعب على رهان ${snap.data().bet}`);
+                if (snap.data().bet !== currentBet) return alert(`الرهان مختلف: ${snap.data().bet}`);
                 joinGame(friendId);
             } else {
-                // Create room if not exists
-                if (friendId == userData.displayId) return createGame(friendId); // My room
-                alert("الغرفة غير موجودة أو اللعب بدأ فيها. اطلب من صديقك الانتظار أولاً.");
+                if (friendId == userData.displayId) return createGame(friendId);
+                alert("الغرفة غير موجودة");
             }
         };
 
@@ -337,56 +384,39 @@
             activeGameId = roomId;
             document.getElementById('wait-room-id').innerText = roomId;
             window.switchView('waiting');
-
             const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
-            
-            // Deduct & Create
             await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-currentBet) });
             await setDoc(gameRef, {
                 p1: { uid: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
-                bet: currentBet,
-                status: 'waiting',
-                turn: 1,
-                createdAt: serverTimestamp()
+                bet: currentBet, status: 'waiting', turn: 1, createdAt: serverTimestamp()
             });
-
             listenToGame(roomId);
         }
 
         async function joinGame(roomId) {
             const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
-            
-            // Deduct & Update
             await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-currentBet) });
             await updateDoc(gameRef, {
                 p2: { uid: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
-                status: 'playing',
-                lastAction: Date.now()
+                status: 'playing', lastAction: Date.now()
             });
-
             listenToGame(roomId);
         }
 
-        // --- Safe Cancel (Transactional) ---
         window.cancelSearch = async () => {
             if (!activeGameId) return window.switchView('lobby');
-
             const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId);
             const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-
             try {
                 await runTransaction(db, async (transaction) => {
                     const gameDoc = await transaction.get(gameRef);
-                    if (!gameDoc.exists()) throw "Game gone";
-                    
-                    const data = gameDoc.data();
-                    if (data.status === 'waiting' && data.p1.uid === user.uid) {
+                    if (!gameDoc.exists()) return;
+                    if (gameDoc.data().status === 'waiting' && gameDoc.data().p1.uid === user.uid) {
                         transaction.delete(gameRef);
-                        transaction.update(userRef, { balance: increment(data.bet) });
+                        transaction.update(userRef, { balance: increment(gameDoc.data().bet) });
                     }
                 });
-            } catch (e) { console.log("Cancel handled safe"); }
-            
+            } catch (e) {}
             if (gameListener) gameListener();
             activeGameId = null;
             window.switchView('lobby');
@@ -396,30 +426,21 @@
             activeGameId = id;
             gameListener = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), (snap) => {
                 if (!snap.exists()) {
-                    // Game deleted externally (maybe bug or timeout)
-                    if (document.getElementById('view-game').classList.contains('hidden')) {
-                       // Stay in lobby
-                    } else {
-                       window.switchView('lobby'); 
-                    }
+                    if (!document.getElementById('view-game').classList.contains('hidden')) return window.switchView('lobby');
                     return;
                 }
                 const data = snap.data();
                 if (data.status === 'playing' || data.status === 'finished') {
                     window.switchView('game');
                     renderBoard(data);
-                    checkTimeOut(data); // 1 Minute Rule
+                    checkTimeOut(data);
                 }
             });
         }
 
-        // --- Timeout Logic (1 Min) ---
         function checkTimeOut(data) {
             if (data.status !== 'playing') return;
-            const now = Date.now();
-            const lastAct = data.lastAction || Date.now();
-            if (now - lastAct > 60000) {
-                // Force Win for the one who played last (or P2 if just started)
+            if (Date.now() - (data.lastAction || Date.now()) > 60000) {
                 const winner = data.turn === 1 ? 2 : 1; 
                 endGameForce(winner);
             }
@@ -429,24 +450,37 @@
              await updateDoc(gRef, { status: 'finished', winner: wIdx });
         }
 
-        // --- Gameplay ---
         function renderBoard(data) {
             const container = document.getElementById('game-board');
             const isP1 = data.p1.uid === user.uid;
             const myTurn = (data.turn === 1 && isP1) || (data.turn === 2 && !isP1);
+
+            // Determine dice visuals
+            // If it's my turn and I haven't rolled yet, show static dice or nothing
+            // If rolls exist, show the last roll result
+            
+            const p1LastRoll = data.p1.rolls.length > 0 ? data.p1.rolls[data.p1.rolls.length - 1] : 1;
+            const p2LastRoll = data.p2.rolls.length > 0 ? data.p2.rolls[data.p2.rolls.length - 1] : 1;
+
+            // Simple logic: if total is 0, dice is 1. 
+            // We need to know if it's currently rolling. 
+            // For simplicity in this sync model, we show the result immediately. 
+            // To make it look like it's rolling, we could use a local state, but let's stick to the 3D result.
 
             let html = `
                 <div class="text-center mb-8">
                     <span class="bg-blue-600/20 text-blue-400 px-4 py-1 rounded-full text-xs font-bold border border-blue-500/30">الجائزة: ${(data.bet * 2).toLocaleString()}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="fluid-glass p-4 text-center ${data.turn===1?'border-blue-500 border':''}">
-                        <img src="${data.p1.photo}" class="w-10 h-10 rounded-full mx-auto mb-2">
-                        <div class="text-2xl font-black">${data.p1.total}</div>
+                    <div class="fluid-glass p-4 text-center flex flex-col items-center ${data.turn===1?'border-blue-500 border':''}">
+                        <img src="${data.p1.photo}" class="w-10 h-10 rounded-full mb-2">
+                        <div class="mb-2">${createDiceHTML(p1LastRoll, false)}</div>
+                        <div class="text-xl font-black mt-2 text-gray-300">مجموع: ${data.p1.total}</div>
                     </div>
-                    <div class="fluid-glass p-4 text-center ${data.turn===2?'border-blue-500 border':''}">
-                        <img src="${data.p2.photo}" class="w-10 h-10 rounded-full mx-auto mb-2">
-                        <div class="text-2xl font-black">${data.p2.total}</div>
+                    <div class="fluid-glass p-4 text-center flex flex-col items-center ${data.turn===2?'border-blue-500 border':''}">
+                        <img src="${data.p2.photo}" class="w-10 h-10 rounded-full mb-2">
+                        <div class="mb-2">${createDiceHTML(p2LastRoll, false)}</div>
+                        <div class="text-xl font-black mt-2 text-gray-300">مجموع: ${data.p2.total}</div>
                     </div>
                 </div>
             `;
@@ -454,7 +488,10 @@
             if (data.status === 'playing') {
                 html += `
                     <div class="text-center">
-                        ${myTurn ? `<button onclick="doRoll()" class="btn-action w-20 h-20 rounded-full text-3xl shadow-xl animate-pulse"><i class="fas fa-dice"></i></button><p class="mt-4 font-bold text-blue-400">دورك!</p>` : `<p class="text-gray-500 text-sm">الخصم يلعب...</p>`}
+                        ${myTurn ? 
+                            `<button onclick="doRoll()" class="btn-action w-full py-4 rounded-xl text-xl font-bold shadow-xl animate-pulse">ارمي الزار <i class="fas fa-dice ml-2"></i></button>` : 
+                            `<p class="text-gray-500 text-sm">الخصم يلعب...</p>`
+                        }
                     </div>
                 `;
             } else {
@@ -472,12 +509,15 @@
         }
 
         window.doRoll = async () => {
+            // Local visual feedback could be added here (spinning the dice class)
             const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId);
             const data = (await getDoc(gRef)).data();
             const isP1 = data.p1.uid === user.uid;
             const me = isP1 ? data.p1 : data.p2;
 
             if (me.rolls.length >= 2) return;
+            
+            // Random roll 1-6
             const val = Math.floor(Math.random() * 6) + 1;
             const newRolls = [...me.rolls, val];
             const newTotal = newRolls.reduce((a,b)=>a+b, 0);
