@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نحن هنا | Elite Challenge</title>
+    <title>نحن هنا | We Are Here</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
@@ -21,52 +21,45 @@
             background-color: var(--bg);
             color: #f1f5f9;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        /* Fluid Soft UI Design */
-        .soft-card {
-            background: rgba(15, 23, 42, 0.6);
+        .fluid-card {
+            background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
             border-radius: 2.5rem;
         }
 
-        .btn-premium {
+        .btn-fluid {
             background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
             box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 1.5rem;
         }
 
-        .btn-premium:active { transform: scale(0.95); }
+        .btn-fluid:active { transform: scale(0.95); }
 
         .glass-input {
             background: rgba(2, 6, 23, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1.5rem;
+            border-radius: 1.25rem;
             transition: all 0.3s;
         }
 
-        .glass-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
-            outline: none;
-        }
-
-        /* Animations */
-        .fade-in { animation: fadeIn 0.8s ease-out; }
+        .page-fade { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .dice-spin { animation: spin 0.6s ease-in-out infinite; }
+        .dice-spin { animation: spin 0.5s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col items-center">
 
     <!-- Splash Loader -->
     <div id="splash" class="fixed inset-0 z-[3000] bg-[#010413] flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="relative w-24 h-24 mb-6">
+        <div class="relative w-20 h-20 mb-6">
             <div class="absolute inset-0 rounded-full border-2 border-blue-500/10"></div>
             <div class="absolute inset-0 rounded-full border-t-2 border-blue-500 animate-spin"></div>
             <i class="fas fa-gem absolute inset-0 flex items-center justify-center text-3xl text-blue-500"></i>
@@ -77,8 +70,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, getDocs, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Firebase Config (Official power-4ec4d)
         const firebaseConfig = {
             apiKey: "AIzaSyAuWgWjxvlwVLt_nxoA0g_Z_k21Yn2MuJ8",
             authDomain: "power-4ec4d.firebaseapp.com",
@@ -92,179 +86,200 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        const appId = 'we-are-here-dice-v3';
+        const appId = 'we-are-here-pro-v1';
 
         let user = null;
         let userData = { balance: 0 };
         let currentGameId = null;
         let gameSub = null;
+        let searchInterval = null;
 
-        // --- Auth & Persistence ---
+        // --- Auth Persistence ---
         setPersistence(auth, browserLocalPersistence);
 
         onAuthStateChanged(auth, async (u) => {
-            const authView = document.getElementById('view-auth');
-            const mainView = document.getElementById('view-main');
+            const viewAuth = document.getElementById('view-auth');
+            const viewMain = document.getElementById('view-main');
             const splash = document.getElementById('splash');
 
             if (u) {
                 user = u;
-                authView.classList.add('hidden');
-                mainView.classList.remove('hidden');
-                initProfile();
+                viewAuth.classList.add('hidden');
+                viewMain.classList.remove('hidden');
+                initUser();
             } else {
                 user = null;
-                authView.classList.remove('hidden');
-                mainView.classList.add('hidden');
+                viewAuth.classList.remove('hidden');
+                viewMain.classList.add('hidden');
             }
             setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.classList.add('hidden'), 1000); }, 1500);
         });
 
-        window.login = () => signInWithPopup(auth, provider).catch(e => alert("فشل الدخول، تأكد من إعدادات المتصفح."));
+        window.login = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth);
 
-        async function initProfile() {
+        async function initUser() {
             const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
             onSnapshot(userRef, (snap) => {
                 if (snap.exists()) {
                     userData = snap.data();
-                    updateUI();
+                    updateDisplay();
                 } else {
                     setDoc(userRef, { balance: 500, name: user.displayName, photo: user.photoURL, uid: user.uid });
                 }
             });
         }
 
-        function updateUI() {
+        function updateDisplay() {
             document.querySelectorAll('.bal-val').forEach(el => el.innerText = userData.balance.toLocaleString());
             document.getElementById('u-name').innerText = user.displayName;
             document.getElementById('u-photo').src = user.photoURL;
         }
 
         window.showScreen = (id) => {
-            document.querySelectorAll('.app-screen').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if (id === 'lobby' && gameSub) { gameSub(); gameSub = null; }
         };
 
-        // --- Matchmaking (Random & Custom) ---
-        window.findRandomMatch = async () => {
+        // --- Matchmaking & Games ---
+        window.startSearch = async () => {
             const bet = parseInt(document.getElementById('bet-select').value);
             if (userData.balance < bet) return alert("رصيدك لا يكفي لهذا التحدي.");
-            
+
             document.getElementById('search-overlay').classList.remove('hidden');
             
-            // Search for an open game with the same bet
+            // Search for an existing match
             const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
             const qSnap = await getDocs(gamesRef);
-            let foundGameId = null;
+            let targetGameId = null;
 
             qSnap.forEach(doc => {
                 const data = doc.data();
                 if (data.status === 'waiting' && data.bet === bet && data.p1.id !== user.uid) {
-                    foundGameId = doc.id;
+                    targetGameId = doc.id;
                 }
             });
 
-            if (foundGameId) {
-                await joinGame(foundGameId, bet);
+            if (targetGameId) {
+                joinMatch(targetGameId, bet);
             } else {
-                // Create new room with a random ID
-                const newId = Math.floor(100000 + Math.random() * 900000).toString();
-                await createGame(newId, bet);
-            }
-            document.getElementById('search-overlay').classList.add('hidden');
-        };
-
-        window.joinCustomRoom = async () => {
-            const rid = document.getElementById('custom-room-id').value.trim();
-            const bet = parseInt(document.getElementById('bet-select').value);
-            if (!rid) return alert("أدخل رقم الغرفة.");
-            if (userData.balance < bet) return alert("رصيدك لا يكفي.");
-
-            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', rid);
-            const snap = await getDoc(gRef);
-
-            if (!snap.exists()) {
-                await createGame(rid, bet);
-            } else {
-                await joinGame(rid, bet);
+                const newId = "room_" + Math.floor(Math.random() * 1000000);
+                createMatch(newId, bet);
             }
         };
 
-        async function createGame(id, bet) {
+        async function createMatch(id, bet) {
             await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-bet) });
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), {
-                p1: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
-                bet, status: 'waiting', turn: 1, createdAt: new Date()
+                p1: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0, lastSeen: Date.now() },
+                bet, status: 'waiting', turn: 1, createdAt: serverTimestamp()
             });
-            startListening(id);
+            listenToMatch(id);
         }
 
-        async function joinGame(id, bet) {
+        async function joinMatch(id, bet) {
             const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', id);
-            const data = (await getDoc(gRef)).data();
-            if (data.status !== 'waiting') return alert("الغرفة لم تعد متاحة.");
-            
             await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-bet) });
             await updateDoc(gRef, {
-                p2: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
-                status: 'playing'
+                p2: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0, lastSeen: Date.now() },
+                status: 'playing', lastAction: Date.now()
             });
-            startListening(id);
+            listenToMatch(id);
         }
 
-        function startListening(id) {
+        window.cancelSearch = async () => {
+            if (currentGameId) {
+                const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId);
+                const snap = await getDoc(gRef);
+                const data = snap.data();
+                if (data.status === 'waiting') {
+                    await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(data.bet) });
+                    await deleteDoc(gRef);
+                }
+            }
+            document.getElementById('search-overlay').classList.add('hidden');
+            showScreen('lobby');
+        };
+
+        function listenToMatch(id) {
             currentGameId = id;
+            document.getElementById('search-overlay').classList.add('hidden');
             showScreen('view-game');
-            gameSub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), (s) => {
-                if (s.exists()) renderGame(s.data());
+            
+            gameSub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    renderBoard(data);
+                    checkTimeout(data);
+                }
             });
         }
 
-        function renderGame(data) {
-            const board = document.getElementById('game-board');
+        // Timeout Logic: 60 Seconds
+        function checkTimeout(data) {
+            if (data.status !== 'playing') return;
+            const now = Date.now();
+            const lastAction = data.lastAction || data.createdAt?.toMillis();
+            if (now - lastAction > 60000) { // 60 Seconds
+                // The player who DIDN'T take the last action wins
+                const winner = data.turn === 1 ? 2 : 1;
+                forceEnd(winner);
+            }
+        }
+
+        async function forceEnd(winnerIdx) {
+            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId);
+            await updateDoc(gRef, { status: 'finished', winner: winnerIdx });
+        }
+
+        function renderBoard(data) {
+            const area = document.getElementById('arena');
             const isP1 = data.p1.id === user.uid;
             const myTurn = (data.turn === 1 && isP1) || (data.turn === 2 && !isP1);
 
-            let html = `<div class="text-center mb-8"><span class="bg-blue-600/10 text-blue-400 px-4 py-1 rounded-full text-[10px] font-black border border-blue-500/20">تحدي بـ ${(data.bet * 2).toLocaleString()} 💎</span></div>`;
+            let html = `<div class="text-center mb-8"><span class="bg-blue-600/10 text-blue-400 px-4 py-1 rounded-full text-[10px] font-black border border-blue-500/20">التحدي: ${(data.bet * 2).toLocaleString()} 💎</span></div>`;
 
             if (data.status === 'waiting') {
-                html += `<div class="py-32 text-center animate-pulse text-gray-500">بانتظار منافس للانضمام إلى الغرفة #${currentGameId}</div>`;
+                html += `
+                    <div class="py-24 text-center">
+                        <div class="dice-spin text-4xl text-blue-500 mb-6"><i class="fas fa-dice"></i></div>
+                        <p class="text-gray-400 mb-8">بانتظار منافس...</p>
+                        <button onclick="cancelSearch()" class="text-red-500 font-bold text-sm underline">إلغاء والانسحاب</button>
+                    </div>
+                `;
             } else if (data.status === 'playing') {
                 html += `
-                    <div class="grid grid-cols-2 gap-6 mb-12">
-                        <div class="soft-card p-6 flex flex-col items-center border-2 ${data.turn===1?'border-blue-500 shadow-lg shadow-blue-500/20':'border-transparent opacity-40'}">
-                            <img src="${data.p1.photo}" class="w-14 h-14 rounded-2xl mb-4 border border-slate-700">
-                            <p class="text-[10px] font-bold opacity-60 truncate max-w-full">${data.p1.name}</p>
-                            <div class="text-5xl font-black mt-2">${data.p1.total}</div>
+                    <div class="grid grid-cols-2 gap-4 mb-10">
+                        <div class="fluid-card p-5 flex flex-col items-center border-2 ${data.turn===1?'border-blue-500 shadow-blue-500/20':'border-transparent opacity-40'}">
+                            <img src="${data.p1.photo}" class="w-14 h-14 rounded-2xl mb-2 border border-slate-700">
+                            <div class="text-xs font-black">${data.p1.total}</div>
                         </div>
-                        <div class="soft-card p-6 flex flex-col items-center border-2 ${data.turn===2?'border-blue-500 shadow-lg shadow-blue-500/20':'border-transparent opacity-40'}">
-                            <img src="${data.p2.photo}" class="w-14 h-14 rounded-2xl mb-4 border border-slate-700">
-                            <p class="text-[10px] font-bold opacity-60 truncate max-w-full">${data.p2.name}</p>
-                            <div class="text-5xl font-black mt-2">${data.p2.total}</div>
+                        <div class="fluid-card p-5 flex flex-col items-center border-2 ${data.turn===2?'border-blue-500 shadow-blue-500/20':'border-transparent opacity-40'}">
+                            <img src="${data.p2.photo}" class="w-14 h-14 rounded-2xl mb-2 border border-slate-700">
+                            <div class="text-xs font-black">${data.p2.total}</div>
                         </div>
                     </div>
                     <div class="flex flex-col items-center">
                         ${myTurn ? `
-                            <button onclick="roll()" class="btn-premium w-24 h-24 rounded-full text-4xl shadow-blue-500/50 flex items-center justify-center"><i class="fas fa-dice"></i></button>
-                            <p class="mt-4 text-blue-400 font-black animate-bounce text-sm">دورك الآن</p>
-                        ` : `<p class="text-gray-500 italic text-sm">بانتظار حركة المنافس...</p>`}
+                            <button onclick="roll()" class="btn-fluid w-24 h-24 text-4xl flex items-center justify-center"><i class="fas fa-dice"></i></button>
+                            <p class="mt-4 text-blue-400 font-black animate-pulse">دورك الآن</p>
+                        ` : `<p class="text-gray-500 italic text-sm">بانتظار الخصم (60 ثانية مهلة)...</p>`}
                     </div>
                 `;
             } else {
                 const iWon = data.winner === (isP1 ? 1 : 2);
                 html += `
-                    <div class="text-center py-10 fade-in">
-                        <div class="text-8xl mb-8">${iWon ? '👑' : '🥈'}</div>
-                        <h2 class="text-3xl font-black mb-4">${iWon ? 'أنت البطل!' : 'جولة رائعة'}</h2>
-                        <p class="text-gray-400 mb-12">${iWon ? `تمت إضافة ${(data.bet * 2).toLocaleString()} جوهرة لمحفظتك` : 'لقد خضت تحدياً مشرفاً'}</p>
-                        <button onclick="location.reload()" class="btn-premium w-full py-5 rounded-2xl font-black">العودة للساحة</button>
+                    <div class="text-center py-10 page-fade">
+                        <div class="text-7xl mb-6">${iWon ? '👑' : '🥈'}</div>
+                        <h2 class="text-2xl font-black mb-2">${iWon ? 'مبروك الفوز!' : 'حظ أوفر'}</h2>
+                        <p class="text-xs text-gray-500 mb-10">${iWon ? `تم إضافة الجواهر لحسابك` : 'حاول مجدداً في جولة أخرى'}</p>
+                        <button onclick="location.reload()" class="btn-fluid w-full py-4 font-bold">العودة للرئيسية</button>
                     </div>
                 `;
-                if(iWon && !data.paid) finalize(data);
+                if(iWon && !data.paid) payout(data);
             }
-            board.innerHTML = html;
+            area.innerHTML = html;
         }
 
         window.roll = async () => {
@@ -274,202 +289,178 @@
             const me = isP1 ? data.p1 : data.p2;
 
             if (me.rolls.length >= 2) return;
-            const r = Math.floor(Math.random() * 6) + 1;
-            const newRolls = [...me.rolls, r];
-            const newTotal = newRolls.reduce((a, b) => a + b, 0);
+            const val = Math.floor(Math.random() * 6) + 1;
+            const rolls = [...me.rolls, val];
+            const total = rolls.reduce((a,b)=>a+b, 0);
 
             const key = isP1 ? 'p1' : 'p2';
-            const upd = { [`${key}.rolls`]: newRolls, [`${key}.total`]: newTotal };
+            const upd = { [`${key}.rolls`]: rolls, [`${key}.total`]: total, lastAction: Date.now() };
 
-            if (newRolls.length === 2) {
+            if (rolls.length === 2) {
                 if (isP1) upd.turn = 2;
-                else { upd.status = 'finished'; upd.winner = data.p1.total > newTotal ? 1 : (newTotal > data.p1.total ? 2 : 0); }
+                else { upd.status = 'finished'; upd.winner = data.p1.total > total ? 1 : (total > data.p1.total ? 2 : 0); }
             }
             await updateDoc(gRef, upd);
         };
 
-        async function finalize(data) {
+        async function payout(data) {
             const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
             await updateDoc(userRef, { balance: increment(data.bet * 2) });
             await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId), { paid: true });
         }
 
-        // --- Store / Deposit ---
-        window.openVoucher = (gems) => {
+        // --- Store System ---
+        window.openShip = (gems) => {
             window.targetGems = gems;
-            document.getElementById('modal-voucher').classList.remove('hidden');
-            document.getElementById('v-info').innerText = `حزمة الـ ${gems} جوهرة`;
+            document.getElementById('modal-ship').classList.remove('hidden');
+            document.getElementById('ship-info').innerText = `حزمة ${gems} جوهرة`;
         };
 
-        window.submitVoucher = async () => {
-            const code = document.getElementById('inp-v-code').value.trim();
-            if (!code || code.length < 5) return alert("أدخل رمزاً صحيحاً.");
-            
-            const btn = document.getElementById('btn-v-confirm');
-            btn.disabled = true; btn.innerText = "جاري الإرسال...";
-
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'deposit_requests'), {
-                    userId: user.uid, userName: user.displayName, 
-                    cardCode: code, gems: window.targetGems,
-                    timestamp: new Date()
-                });
-                alert("تم إرسال طلبك. ستتم الإضافة فور التأكد من الرمز.");
-                document.getElementById('modal-voucher').classList.add('hidden');
-                document.getElementById('inp-v-code').value = '';
-            } catch (e) { alert("خطأ في الاتصال."); }
-            finally { btn.disabled = false; btn.innerText = "تأكيد"; }
+        window.submitShip = async () => {
+            const code = document.getElementById('ship-code').value.trim();
+            if(!code) return alert("أدخل الرمز أولاً.");
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'deposit_requests'), {
+                userId: user.uid, userName: user.displayName, cardCode: code, gems: window.targetGems, timestamp: serverTimestamp()
+            });
+            alert("تم إرسال الطلب، ستصلك الجواهر فور التأكد.");
+            document.getElementById('modal-ship').classList.add('hidden');
         };
 
     </script>
 
-    <!-- UI: Authentication -->
-    <section id="view-auth" class="hidden min-h-screen flex flex-col items-center justify-center p-12 text-center max-w-sm mx-auto">
-        <div class="soft-card w-28 h-28 flex items-center justify-center text-5xl text-blue-500 mb-12 shadow-2xl animate-pulse">
+    <!-- Auth View -->
+    <section id="view-auth" class="hidden min-h-screen flex flex-col items-center justify-center p-8 text-center w-full max-w-sm">
+        <div class="fluid-card w-24 h-24 flex items-center justify-center text-4xl text-blue-500 mb-10 shadow-2xl">
             <i class="fas fa-dice-d20"></i>
         </div>
-        <h1 class="text-5xl font-black mb-6 tracking-tighter">نحن هنا</h1>
-        <p class="text-gray-500 text-sm mb-16 leading-relaxed">تحدى النخبة في عالم الزار الملكي. ابدأ الآن واكتشف روعة المنافسة.</p>
-        <button onclick="login()" class="btn-premium w-full py-6 font-black text-xl flex items-center justify-center gap-4 shadow-2xl">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-7 h-7">
-            الدخول عبر Google
+        <h1 class="text-4xl font-black mb-4 tracking-tighter">نحن هنا</h1>
+        <p class="text-gray-400 text-sm mb-12">ادخل عالم التحديات، اجمع الجواهر وحولها لمكافآت حقيقية.</p>
+        <button onclick="login()" class="btn-fluid w-full py-5 font-black text-lg flex items-center justify-center gap-4">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6">
+            دخول عبر Google
         </button>
     </section>
 
-    <!-- UI: Main Application -->
-    <section id="view-main" class="hidden w-full max-w-md p-6 pt-10 mx-auto">
+    <!-- Main App View -->
+    <section id="view-main" class="hidden w-full max-w-md p-6 pt-10">
         
-        <!-- Top Navigation -->
-        <header class="flex justify-between items-center mb-12 soft-card p-5">
-            <div class="flex items-center gap-4">
-                <div class="relative">
-                    <img id="u-photo" class="w-14 h-14 rounded-3xl border-2 border-blue-500/40 p-0.5 object-cover">
-                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-[#0f172a] rounded-full"></div>
-                </div>
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10 fluid-card p-4">
+            <div class="flex items-center gap-3">
+                <img id="u-photo" class="w-12 h-12 rounded-2xl border-2 border-blue-500/40 p-0.5 object-cover">
                 <div class="leading-none">
-                    <h3 id="u-name" class="font-bold text-[10px] truncate max-w-[130px] opacity-70 mb-1">---</h3>
+                    <h3 id="u-name" class="font-bold text-[10px] truncate max-w-[120px] opacity-70 mb-1">---</h3>
                     <div class="bg-blue-600/10 px-3 py-1 rounded-xl text-blue-400 font-black text-xs inline-block">
                         <span class="bal-val">0</span> 💎
                     </div>
                 </div>
             </div>
-            <button onclick="logout()" class="w-12 h-12 soft-card flex items-center justify-center text-red-500 hover:bg-red-500/10 transition-colors">
+            <button onclick="logout()" class="w-10 h-10 fluid-card flex items-center justify-center text-red-500 hover:bg-red-500/10 transition-colors">
                 <i class="fas fa-power-off text-sm"></i>
             </button>
         </header>
 
         <!-- Screen: Lobby -->
-        <div id="lobby" class="app-screen space-y-10 fade-in">
-            <div class="soft-card p-10 text-center relative overflow-hidden">
-                <div class="absolute -top-12 -right-12 w-40 h-40 bg-blue-600/5 rounded-full blur-3xl"></div>
-                <h2 class="text-3xl font-black mb-10 tracking-tight">ساحة التحدي</h2>
-                
+        <div id="lobby" class="screen space-y-8 page-fade">
+            <div class="fluid-card p-10 text-center relative overflow-hidden">
+                <h2 class="text-2xl font-black mb-8 tracking-tight">ساحة التحدي</h2>
                 <div class="space-y-6">
                     <div class="text-right">
-                        <label class="text-[10px] text-gray-500 block mb-3 font-black uppercase tracking-widest px-3">مستوى الجولة</label>
-                        <select id="bet-select" class="w-full glass-input p-5 font-black text-2xl text-center cursor-pointer">
+                        <label class="text-[10px] text-gray-500 block mb-2 font-black uppercase tracking-widest px-2">مستوى الجولة</label>
+                        <select id="bet-select" class="w-full glass-input p-4 font-black text-xl text-center">
                             <option value="100">100 💎</option>
                             <option value="500" selected>500 💎</option>
                             <option value="1000">1,000 💎</option>
                         </select>
                     </div>
-
-                    <div class="grid grid-cols-1 gap-4">
-                        <button onclick="findRandomMatch()" class="btn-premium w-full py-6 font-black text-xl flex items-center justify-center gap-3">
-                            <i class="fas fa-search"></i> بحث عن منافس عشوائي
-                        </button>
-                        
-                        <div class="flex items-center gap-2 py-4">
-                            <div class="flex-1 h-px bg-white/5"></div>
-                            <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">أو ادخل معرف غرفة</span>
-                            <div class="flex-1 h-px bg-white/5"></div>
-                        </div>
-
-                        <div class="flex gap-3">
-                            <input id="custom-room-id" type="number" placeholder="رقم الغرفة" class="flex-1 glass-input p-5 font-black text-xl">
-                            <button onclick="joinCustomRoom()" class="soft-card px-6 hover:bg-white/5 transition-colors"><i class="fas fa-sign-in-alt"></i></button>
-                        </div>
-                    </div>
+                    <button onclick="startSearch()" class="btn-fluid w-full py-5 font-black text-xl flex items-center justify-center gap-3">
+                        <i class="fas fa-bolt"></i> بحث سريع
+                    </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-5">
-                <button onclick="showScreen('store')" class="soft-card p-8 flex flex-col items-center gap-5 transition hover:scale-105 active:scale-95">
-                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-2xl shadow-inner"><i class="fas fa-store"></i></div>
-                    <span class="font-black text-xs uppercase tracking-widest">المتجر</span>
+                <button onclick="showScreen('store')" class="fluid-card p-8 flex flex-col items-center gap-4 transition hover:scale-105 active:scale-95">
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-xl"><i class="fas fa-shopping-bag"></i></div>
+                    <span class="font-bold text-xs">المتجر</span>
                 </button>
-                <button onclick="showScreen('rewards')" class="soft-card p-8 flex flex-col items-center gap-5 transition hover:scale-105 active:scale-95">
-                    <div class="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 text-2xl shadow-inner"><i class="fas fa-gift"></i></div>
-                    <span class="font-black text-xs uppercase tracking-widest">المكافآت</span>
+                <button onclick="showScreen('rewards')" class="fluid-card p-8 flex flex-col items-center gap-4 transition hover:scale-105 active:scale-95">
+                    <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 text-xl"><i class="fas fa-wallet"></i></div>
+                    <span class="font-bold text-xs">سحب الربح</span>
                 </button>
             </div>
             
-            <p class="text-center text-[10px] text-gray-600 font-bold tracking-[0.3em] uppercase">We Are Here System v3.0</p>
+            <div class="fluid-card p-6 border-l-4 border-blue-500 bg-blue-500/5 text-xs text-gray-400 italic">
+                <i class="fas fa-info-circle ml-2 text-blue-500"></i>
+                نظام تعليمي: الجواهر هي رصيدك الافتراضي. يمكنك زيادته من المتجر وتحويل أرباحك لمبالغ حقيقية من "سحب الربح".
+            </div>
         </div>
 
         <!-- Store View -->
-        <div id="store" class="app-screen hidden space-y-8 fade-in">
-            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-6 flex items-center gap-3 px-2"><i class="fas fa-arrow-right"></i> العودة</button>
-            <h2 class="text-4xl font-black mb-12 tracking-tighter">متجر النخبة 💎</h2>
-            <div class="space-y-5">
-                <div onclick="openVoucher(500)" class="soft-card p-8 flex justify-between items-center cursor-pointer border-r-4 border-blue-500 hover:bg-blue-500/5 transition-all">
-                    <div class="flex items-center gap-6">
-                        <div class="w-16 h-16 bg-blue-500/15 rounded-2xl flex items-center justify-center text-3xl"><i class="fas fa-gem"></i></div>
-                        <div><p class="font-black text-xl">500 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 5$</p></div>
-                    </div>
-                    <i class="fas fa-plus text-blue-400 opacity-40"></i>
+        <div id="store" class="screen hidden space-y-6 page-fade">
+            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-4 flex items-center gap-2"><i class="fas fa-arrow-right"></i> رجوع</button>
+            <h2 class="text-3xl font-black mb-8 tracking-tighter">شراء الجواهر 💎</h2>
+            <div class="space-y-4">
+                <div onclick="openShip(500)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-blue-500 hover:bg-blue-500/5 transition-all">
+                    <div><p class="font-black text-lg">500 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 5$ آسيا</p></div>
+                    <i class="fas fa-plus text-blue-500 opacity-40"></i>
                 </div>
-                <div onclick="openVoucher(1500)" class="soft-card p-8 flex justify-between items-center cursor-pointer border-r-4 border-indigo-500 hover:bg-indigo-500/5 transition-all">
-                    <div class="flex items-center gap-6">
-                        <div class="w-16 h-16 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-3xl text-indigo-400"><i class="fas fa-crown"></i></div>
-                        <div><p class="font-black text-xl">1,500 جوهرة</p><p class="text-[10px] text-indigo-300 font-bold">باقة النخبة (10$)</p></div>
-                    </div>
-                    <i class="fas fa-plus text-indigo-400 opacity-40"></i>
+                <div onclick="openShip(1500)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-indigo-500 hover:bg-indigo-500/5 transition-all">
+                    <div><p class="font-black text-lg">1500 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 15$ آسيا</p></div>
+                    <i class="fas fa-plus text-indigo-500 opacity-40"></i>
+                </div>
+                <div onclick="openShip(5000)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-purple-500 hover:bg-purple-500/5 transition-all">
+                    <div><p class="font-black text-lg">5,000 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 50$ آسيا</p></div>
+                    <i class="fas fa-plus text-purple-500 opacity-40"></i>
+                </div>
+                <div onclick="openShip(15000)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-yellow-500 hover:bg-yellow-500/5 transition-all">
+                    <div><p class="font-black text-lg">15,000 جوهرة</p><p class="text-[10px] opacity-40 font-bold text-yellow-500">قيمة التبادل: 150$ آسيا</p></div>
+                    <i class="fas fa-plus text-yellow-500 opacity-40"></i>
                 </div>
             </div>
         </div>
 
         <!-- Rewards View -->
-        <div id="rewards" class="app-screen hidden text-center fade-in">
-            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-10 block text-right px-2"><i class="fas fa-arrow-right"></i> رجوع</button>
-            <div class="soft-card p-14 border-t-2 border-blue-500/20 shadow-blue-500/5">
-                <div class="w-24 h-24 bg-blue-600/10 text-blue-400 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-10 shadow-inner"><i class="fas fa-exchange-alt"></i></div>
-                <h2 class="text-3xl font-black mb-4 tracking-tight">مركز السحب</h2>
-                <p class="text-sm text-gray-500 mb-12 px-4 leading-relaxed italic">حوّل إنجازاتك من الجواهر إلى مكافآت حقيقية تحول لمحفظتك الشخصية.</p>
-                <div class="glass-input p-8 mb-12">
-                    <p class="text-[10px] text-gray-500 font-black mb-3 uppercase tracking-widest">رصيدك المتاح حالياً</p>
-                    <div class="text-6xl font-black text-blue-400 tracking-tighter bal-val">0</div>
-                    <p class="text-[10px] text-blue-400/50 mt-5 font-bold">كل 100 جوهرة = 1,000 دينار عراقي</p>
+        <div id="rewards" class="screen hidden text-center page-fade">
+            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-8 block text-right px-2"><i class="fas fa-arrow-right"></i> رجوع</button>
+            <div class="fluid-card p-12">
+                <div class="w-20 h-20 bg-blue-600/10 text-blue-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner"><i class="fas fa-exchange-alt"></i></div>
+                <h2 class="text-2xl font-black mb-10 tracking-tight">سحب الربح</h2>
+                <div class="glass-input p-6 mb-10">
+                    <p class="text-[10px] text-gray-500 font-black mb-2 uppercase tracking-widest">رصيدك المتاح للسحب</p>
+                    <div class="text-5xl font-black text-blue-400 tracking-tighter bal-val">0</div>
+                    <p class="text-[10px] text-blue-400/50 mt-4 font-bold">كل 100 جوهرة = 1,000 دينار عراقي</p>
                 </div>
-                <button onclick="alert('سيتم معالجة الطلب وتحويل الرصيد خلال ساعات.')" class="btn-premium w-full py-6 font-black text-xl">تفعيل عملية السحب</button>
+                <button onclick="alert('سيتم معالجة الطلب وتحويل الرصيد خلال 24 ساعة.')" class="btn-fluid w-full py-5 font-black text-xl">تأكيد طلب السحب</button>
             </div>
         </div>
 
         <!-- Game Arena -->
-        <div id="view-game" class="app-screen hidden"><div id="game-board" class="soft-card p-10 min-h-[500px] fade-in"></div></div>
+        <div id="view-game" class="screen hidden"><div id="arena" class="fluid-card p-10 min-h-[500px]"></div></div>
 
     </section>
 
-    <!-- Modal: Search Overlay -->
-    <div id="search-overlay" class="hidden fixed inset-0 z-[4000] bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center">
+    <!-- Overlay: Searching -->
+    <div id="search-overlay" class="hidden fixed inset-0 z-[4000] bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8">
         <div class="dice-spin text-7xl text-blue-500 mb-8"><i class="fas fa-dice"></i></div>
-        <h3 class="text-2xl font-black mb-2 animate-pulse">جاري البحث عن منافس...</h3>
-        <p class="text-xs text-gray-500 tracking-widest uppercase">Elite Matchmaking</p>
+        <h3 class="text-2xl font-black mb-4 animate-pulse">جاري البحث عن منافس...</h3>
+        <button onclick="cancelSearch()" class="text-red-500 font-bold text-sm underline opacity-50 hover:opacity-100 transition-opacity">تراجع عن البحث</button>
     </div>
 
-    <!-- Modal: Voucher Deposit -->
-    <div id="modal-voucher" class="hidden fixed inset-0 z-[3000] bg-[#010413]/95 backdrop-blur-2xl flex items-center justify-center p-8">
-        <div class="soft-card w-full max-w-sm p-12 relative border-t-4 border-blue-600">
-            <button onclick="document.getElementById('modal-voucher').classList.add('hidden')" class="absolute top-8 left-8 text-gray-600 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+    <!-- Modal: Card Deposit -->
+    <div id="modal-ship" class="hidden fixed inset-0 z-[3000] bg-[#010413]/95 backdrop-blur-2xl flex items-center justify-center p-8">
+        <div class="fluid-card w-full max-w-sm p-10 relative border-t-4 border-blue-600">
+            <button onclick="document.getElementById('modal-ship').classList.add('hidden')" class="absolute top-6 left-6 text-gray-500"><i class="fas fa-times text-xl"></i></button>
             <div class="text-center">
-                <div class="w-20 h-20 bg-blue-600/10 rounded-3xl mx-auto mb-8 flex items-center justify-center text-4xl text-blue-500 shadow-inner"><i class="fas fa-unlock-alt"></i></div>
-                <h3 class="text-3xl font-black mb-2 tracking-tighter">تفعيل الحزمة</h3>
-                <p id="v-info" class="text-sm text-gray-500 mb-12 font-bold"></p>
-                <div class="text-right mb-10">
-                    <label class="text-[10px] text-gray-600 block mb-3 font-black uppercase tracking-widest px-3">الرمز المكتوب على البطاقة</label>
-                    <input id="inp-v-code" type="text" placeholder="*133*الرمز#" class="w-full glass-input p-5 font-mono text-2xl tracking-widest placeholder:text-slate-800">
+                <div class="w-16 h-16 bg-blue-600/10 rounded-2xl mx-auto mb-6 flex items-center justify-center text-3xl text-blue-500 shadow-inner"><i class="fas fa-unlock-alt"></i></div>
+                <h3 class="text-2xl font-black mb-1 tracking-tighter">تفعيل الحزمة</h3>
+                <p id="ship-info" class="text-xs text-gray-500 mb-8 font-bold"></p>
+                <div class="text-right mb-8">
+                    <label class="text-[10px] text-gray-600 block mb-2 font-black uppercase tracking-widest px-2">رمز القسيمة أو البطاقة</label>
+                    <input id="ship-code" type="text" placeholder="*133*الرمز#" class="w-full glass-input p-5 font-mono text-2xl tracking-widest placeholder:text-slate-800">
                 </div>
-                <button id="btn-v-confirm" onclick="submitVoucher()" class="btn-premium w-full py-6 font-black text-xl shadow-blue-500/30">تأكيد التفعيل</button>
+                <button onclick="submitShip()" class="btn-fluid w-full py-5 font-black text-xl shadow-blue-500/30">تأكيد الطلب</button>
+                <p class="mt-8 text-[10px] text-gray-600 italic leading-relaxed px-4">يتم التحقق من الرموز يدوياً لضمان أعلى مستويات الأمان المالي.</p>
             </div>
         </div>
     </div>
