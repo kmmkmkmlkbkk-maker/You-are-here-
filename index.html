@@ -5,74 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نحن هنا | We Are Here</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
     <style>
         :root {
-            --bg: #010413;
-            --surface: #0f172a;
-            --accent: #3b82f6;
-            --secondary: #8b5cf6;
+            --bg-deep: #050b14;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg-deep); color: white; overflow-x: hidden; user-select: none; }
+        
+        .fluid-glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            border-radius: 2rem;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+        .btn-action:active { transform: scale(0.96); }
+        
+        .btn-cancel {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg);
-            color: #f1f5f9;
-            overflow-x: hidden;
-            user-select: none;
-        }
-
-        .fluid-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
-            border-radius: 2.5rem;
-        }
-
-        .btn-fluid {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 1.5rem;
-        }
-
-        .btn-fluid:active { transform: scale(0.95); }
-
-        .glass-input {
-            background: rgba(2, 6, 23, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1.25rem;
+        .input-glass {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1rem;
             transition: all 0.3s;
         }
+        .input-glass:focus { border-color: var(--primary); outline: none; }
 
-        .page-fade { animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .dice-spin { animation: spin 0.5s ease-in-out infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <!-- Splash Loader -->
-    <div id="splash" class="fixed inset-0 z-[3000] bg-[#010413] flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="relative w-20 h-20 mb-6">
-            <div class="absolute inset-0 rounded-full border-2 border-blue-500/10"></div>
-            <div class="absolute inset-0 rounded-full border-t-2 border-blue-500 animate-spin"></div>
-            <i class="fas fa-gem absolute inset-0 flex items-center justify-center text-3xl text-blue-500"></i>
+    <!-- Loading Overlay -->
+    <div id="global-loader" class="fixed inset-0 z-50 bg-[#050b14] flex flex-col items-center justify-center">
+        <div class="loader-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+        <p class="text-xs font-bold tracking-widest text-blue-500">نحن هنا</p>
+    </div>
+
+    <!-- Auth UI -->
+    <section id="auth-ui" class="hidden w-full max-w-sm text-center">
+        <div class="fluid-glass p-10">
+            <div class="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl text-blue-500"><i class="fas fa-dice-d20"></i></div>
+            <h1 class="text-3xl font-black mb-2">نحن هنا</h1>
+            <p class="text-gray-400 text-sm mb-8">سجل دخولك مرة واحدة واحصل على رقمك الخاص.</p>
+            <button onclick="handleLogin()" class="btn-action w-full py-4 rounded-xl font-bold flex items-center justify-center gap-3">
+                <i class="fab fa-google"></i> دخول عبر Google
+            </button>
         </div>
-        <h1 class="text-blue-100 font-black tracking-[0.4em] text-xs opacity-50">نحن هنا</h1>
+    </section>
+
+    <!-- Main UI -->
+    <section id="main-ui" class="hidden w-full max-w-md pb-20">
+        
+        <!-- Header -->
+        <header class="fluid-glass p-4 mb-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img id="u-img" class="w-12 h-12 rounded-full border-2 border-blue-500">
+                    <div class="absolute -bottom-1 -right-1 bg-blue-600 text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-full border border-black" id="u-id">0</div>
+                </div>
+                <div>
+                    <h3 id="u-name" class="font-bold text-xs truncate max-w-[120px]">User</h3>
+                    <div class="text-blue-400 font-black text-sm mt-1"><span id="u-bal">0</span> 💎</div>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="w-10 h-10 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition"><i class="fas fa-power-off"></i></button>
+        </header>
+
+        <!-- Lobby -->
+        <div id="view-lobby" class="space-y-6">
+            <!-- Bet Selector -->
+            <div class="fluid-glass p-6">
+                <label class="text-xs text-gray-400 font-bold block mb-3">اختر قيمة التحدي</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setBet(500)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition" id="btn-500">500</button>
+                    <button onclick="setBet(2500)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition" id="btn-2500">2,500</button>
+                    <button onclick="setBet(5000)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition" id="btn-5000">5,000</button>
+                </div>
+                <div class="mt-2 grid grid-cols-3 gap-2">
+                    <button onclick="setBet(10000)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition" id="btn-10000">10K</button>
+                    <button onclick="setBet(50000)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition" id="btn-50000">50K</button>
+                    <button onclick="setBet(150000)" class="bet-btn bg-slate-800 py-3 rounded-lg border border-transparent focus:border-blue-500 font-bold text-sm transition text-yellow-500" id="btn-150000">150K</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <button onclick="findRandomGame()" class="btn-action w-full py-5 rounded-2xl font-black text-xl shadow-lg relative overflow-hidden group">
+                <span class="relative z-10 flex items-center justify-center gap-3"><i class="fas fa-search"></i> بحث عشوائي سريع</span>
+            </button>
+
+            <div class="fluid-glass p-6 text-center">
+                <p class="text-xs text-gray-400 mb-4 font-bold">أو ادخل رقم صديقك للعب معه</p>
+                <div class="flex gap-2">
+                    <input id="friend-id" type="number" placeholder="رقم الصديق (مثلاً 5)" class="input-glass flex-1 p-3 text-center font-black text-lg">
+                    <button onclick="joinFriend()" class="bg-slate-700 hover:bg-slate-600 px-6 rounded-xl font-bold transition"><i class="fas fa-play"></i></button>
+                </div>
+                <p class="text-[10px] text-gray-500 mt-2">رقمك الخاص هو: <span class="text-blue-400 font-bold u-id-disp"></span></p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="switchView('store')" class="fluid-glass p-4 flex flex-col items-center gap-2 hover:bg-white/5 transition">
+                    <i class="fas fa-shopping-cart text-blue-400 text-2xl"></i>
+                    <span class="text-xs font-bold">شحن الجواهر</span>
+                </button>
+                <button onclick="switchView('withdraw')" class="fluid-glass p-4 flex flex-col items-center gap-2 hover:bg-white/5 transition">
+                    <i class="fas fa-money-bill-wave text-green-400 text-2xl"></i>
+                    <span class="text-xs font-bold">سحب الربح</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Waiting Screen -->
+        <div id="view-waiting" class="hidden text-center py-20">
+            <div class="loader-spin text-6xl text-blue-500 mb-8 mx-auto w-fit"><i class="fas fa-circle-notch"></i></div>
+            <h2 class="text-2xl font-black mb-2">جاري البحث...</h2>
+            <p class="text-gray-400 text-sm mb-12">نبحث لك عن منافس أو ننتظر صديقك في الغرفة <span id="wait-room-id" class="text-blue-400 font-bold"></span></p>
+            <button onclick="cancelSearch()" class="btn-cancel px-10 py-3 rounded-full font-bold">إلغاء وانسحاب</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="view-game" class="hidden">
+            <div id="game-board" class="fluid-glass p-6 min-h-[400px]"></div>
+        </div>
+
+        <!-- Store View -->
+        <div id="view-store" class="hidden space-y-6">
+            <button onclick="switchView('lobby')" class="text-gray-400 font-bold mb-4 flex items-center gap-2"><i class="fas fa-arrow-right"></i> رجوع</button>
+            <h2 class="text-2xl font-black mb-6">شراء الجواهر</h2>
+            <div class="space-y-3" id="store-list">
+                <!-- Items injected via JS -->
+            </div>
+        </div>
+
+        <!-- Withdraw View -->
+        <div id="view-withdraw" class="hidden text-center space-y-6">
+            <button onclick="switchView('lobby')" class="text-gray-400 font-bold mb-4 block text-right"><i class="fas fa-arrow-right"></i> رجوع</button>
+            <div class="fluid-glass p-8">
+                <i class="fas fa-hand-holding-usd text-5xl text-green-500 mb-6"></i>
+                <h2 class="text-xl font-black mb-2">سحب الأرباح</h2>
+                <p class="text-4xl font-black text-white mb-2" id="withdraw-bal">0</p>
+                <p class="text-xs text-gray-400 mb-8">رصيدك المتاح للسحب</p>
+                <button onclick="alert('سيتم تحويل المبلغ لحسابك خلال 24 ساعة')" class="btn-action w-full py-4 rounded-xl font-bold">تأكيد السحب</button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Modals -->
+    <div id="modal-code" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6">
+        <div class="fluid-glass w-full max-w-sm p-8 text-center">
+            <h3 class="font-bold mb-6 text-lg" id="modal-title">تفعيل الكارت</h3>
+            <input id="inp-code" type="text" placeholder="*133*رمز_الكارت#" class="input-glass w-full p-4 text-center font-mono text-xl mb-6">
+            <button onclick="submitVoucher()" class="btn-action w-full py-4 rounded-xl font-bold">تأكيد</button>
+            <button onclick="document.getElementById('modal-code').classList.add('hidden')" class="mt-4 text-gray-500 text-sm">إلغاء</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, getDocs, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, query, where, getDocs, addDoc, runTransaction, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config (Official power-4ec4d)
         const firebaseConfig = {
             apiKey: "AIzaSyAuWgWjxvlwVLt_nxoA0g_Z_k21Yn2MuJ8",
             authDomain: "power-4ec4d.firebaseapp.com",
@@ -86,384 +193,351 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        const appId = 'we-are-here-pro-v1';
+        const appId = 'we-are-here-pro-v4'; // New ID for clean start
 
         let user = null;
-        let userData = { balance: 0 };
-        let currentGameId = null;
-        let gameSub = null;
-        let searchInterval = null;
+        let userData = null;
+        let currentBet = 500;
+        let activeGameId = null;
+        let gameListener = null;
 
-        // --- Auth Persistence ---
+        // --- Init & Auth ---
         setPersistence(auth, browserLocalPersistence);
 
         onAuthStateChanged(auth, async (u) => {
-            const viewAuth = document.getElementById('view-auth');
-            const viewMain = document.getElementById('view-main');
-            const splash = document.getElementById('splash');
-
+            const loader = document.getElementById('global-loader');
             if (u) {
                 user = u;
-                viewAuth.classList.add('hidden');
-                viewMain.classList.remove('hidden');
-                initUser();
+                document.getElementById('auth-ui').classList.add('hidden');
+                document.getElementById('main-ui').classList.remove('hidden');
+                await loadUserProfile();
             } else {
                 user = null;
-                viewAuth.classList.remove('hidden');
-                viewMain.classList.add('hidden');
+                document.getElementById('auth-ui').classList.remove('hidden');
+                document.getElementById('main-ui').classList.add('hidden');
             }
-            setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.classList.add('hidden'), 1000); }, 1500);
+            loader.classList.add('hidden');
         });
 
-        window.login = () => signInWithPopup(auth, provider);
-        window.logout = () => signOut(auth);
+        window.handleLogin = () => signInWithPopup(auth, provider).catch(e => alert("فشل الدخول"));
+        window.handleLogout = () => signOut(auth);
 
-        async function initUser() {
+        async function loadUserProfile() {
             const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-            onSnapshot(userRef, (snap) => {
+            onSnapshot(userRef, async (snap) => {
                 if (snap.exists()) {
                     userData = snap.data();
-                    updateDisplay();
+                    updateHeader();
                 } else {
-                    setDoc(userRef, { balance: 500, name: user.displayName, photo: user.photoURL, uid: user.uid });
+                    // Create New User with Sequential ID
+                    await createNewUserWithId(userRef);
                 }
             });
         }
 
-        function updateDisplay() {
-            document.querySelectorAll('.bal-val').forEach(el => el.innerText = userData.balance.toLocaleString());
+        async function createNewUserWithId(userRef) {
+            const counterRef = doc(db, 'artifacts', appId, 'counters', 'user_count');
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    let newId = 1;
+                    if (counterDoc.exists()) {
+                        newId = counterDoc.data().current + 1;
+                        transaction.update(counterRef, { current: newId });
+                    } else {
+                        transaction.set(counterRef, { current: 1 });
+                    }
+                    transaction.set(userRef, { 
+                        balance: 500, // الهدية 500 فقط
+                        name: user.displayName, 
+                        photo: user.photoURL, 
+                        uid: user.uid,
+                        displayId: newId 
+                    });
+                });
+            } catch (e) { console.error("ID Gen Error", e); }
+        }
+
+        function updateHeader() {
             document.getElementById('u-name').innerText = user.displayName;
-            document.getElementById('u-photo').src = user.photoURL;
+            document.getElementById('u-img').src = user.photoURL;
+            document.getElementById('u-bal').innerText = userData.balance.toLocaleString();
+            document.getElementById('withdraw-bal').innerText = userData.balance.toLocaleString();
+            if(userData.displayId) {
+                document.getElementById('u-id').innerText = userData.displayId;
+                document.querySelectorAll('.u-id-disp').forEach(el => el.innerText = userData.displayId);
+            }
         }
 
-        window.showScreen = (id) => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            if (id === 'lobby' && gameSub) { gameSub(); gameSub = null; }
+        window.setBet = (amount) => {
+            currentBet = amount;
+            document.querySelectorAll('.bet-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-blue-500', 'bg-slate-700');
+                b.classList.add('bg-slate-800');
+            });
+            document.getElementById(`btn-${amount}`).classList.add('ring-2', 'ring-blue-500', 'bg-slate-700');
+        };
+        // Set default
+        window.setBet(500);
+
+        window.switchView = (viewId) => {
+            ['lobby', 'waiting', 'game', 'store', 'withdraw'].forEach(v => 
+                document.getElementById(`view-${v}`).classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
         };
 
-        // --- Matchmaking & Games ---
-        window.startSearch = async () => {
-            const bet = parseInt(document.getElementById('bet-select').value);
-            if (userData.balance < bet) return alert("رصيدك لا يكفي لهذا التحدي.");
+        // --- Core Matchmaking ---
+        
+        // 1. Random Search
+        window.findRandomGame = async () => {
+            if (userData.balance < currentBet) return alert("رصيدك غير كافٍ");
+            window.switchView('waiting');
+            document.getElementById('wait-room-id').innerText = "عشوائي";
 
-            document.getElementById('search-overlay').classList.remove('hidden');
-            
-            // Search for an existing match
+            // Query for waiting games
             const gamesRef = collection(db, 'artifacts', appId, 'public', 'data', 'games');
-            const qSnap = await getDocs(gamesRef);
-            let targetGameId = null;
-
-            qSnap.forEach(doc => {
-                const data = doc.data();
-                if (data.status === 'waiting' && data.bet === bet && data.p1.id !== user.uid) {
-                    targetGameId = doc.id;
-                }
-            });
-
-            if (targetGameId) {
-                joinMatch(targetGameId, bet);
-            } else {
-                const newId = "room_" + Math.floor(Math.random() * 1000000);
-                createMatch(newId, bet);
-            }
-        };
-
-        async function createMatch(id, bet) {
-            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-bet) });
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), {
-                p1: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0, lastSeen: Date.now() },
-                bet, status: 'waiting', turn: 1, createdAt: serverTimestamp()
-            });
-            listenToMatch(id);
-        }
-
-        async function joinMatch(id, bet) {
-            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', id);
-            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-bet) });
-            await updateDoc(gRef, {
-                p2: { id: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0, lastSeen: Date.now() },
-                status: 'playing', lastAction: Date.now()
-            });
-            listenToMatch(id);
-        }
-
-        window.cancelSearch = async () => {
-            if (currentGameId) {
-                const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId);
-                const snap = await getDoc(gRef);
-                const data = snap.data();
-                if (data.status === 'waiting') {
-                    await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(data.bet) });
-                    await deleteDoc(gRef);
-                }
-            }
-            document.getElementById('search-overlay').classList.add('hidden');
-            showScreen('lobby');
-        };
-
-        function listenToMatch(id) {
-            currentGameId = id;
-            document.getElementById('search-overlay').classList.add('hidden');
-            showScreen('view-game');
+            const q = query(gamesRef, where("status", "==", "waiting"), where("bet", "==", currentBet));
             
-            gameSub = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), (snap) => {
-                if (snap.exists()) {
-                    const data = snap.data();
+            const snapshot = await getDocs(q);
+            let foundGame = null;
+            
+            snapshot.forEach(doc => {
+                // Don't join my own game
+                if (doc.data().p1.uid !== user.uid) foundGame = doc;
+            });
+
+            if (foundGame) {
+                joinGame(foundGame.id);
+            } else {
+                // Create room with my ID
+                createGame(userData.displayId.toString());
+            }
+        };
+
+        // 2. Play with Friend
+        window.joinFriend = async () => {
+            const friendId = document.getElementById('friend-id').value.trim();
+            if (!friendId) return alert("ادخل رقم صديقك");
+            if (userData.balance < currentBet) return alert("رصيدك غير كافٍ");
+
+            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', friendId);
+            const snap = await getDoc(gameRef);
+
+            if (snap.exists() && snap.data().status === 'waiting') {
+                if (snap.data().bet !== currentBet) return alert(`صديقك يلعب على رهان ${snap.data().bet}`);
+                joinGame(friendId);
+            } else {
+                // Create room if not exists
+                if (friendId == userData.displayId) return createGame(friendId); // My room
+                alert("الغرفة غير موجودة أو اللعب بدأ فيها. اطلب من صديقك الانتظار أولاً.");
+            }
+        };
+
+        async function createGame(roomId) {
+            activeGameId = roomId;
+            document.getElementById('wait-room-id').innerText = roomId;
+            window.switchView('waiting');
+
+            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
+            
+            // Deduct & Create
+            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-currentBet) });
+            await setDoc(gameRef, {
+                p1: { uid: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
+                bet: currentBet,
+                status: 'waiting',
+                turn: 1,
+                createdAt: serverTimestamp()
+            });
+
+            listenToGame(roomId);
+        }
+
+        async function joinGame(roomId) {
+            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', roomId);
+            
+            // Deduct & Update
+            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(-currentBet) });
+            await updateDoc(gameRef, {
+                p2: { uid: user.uid, name: user.displayName, photo: user.photoURL, rolls: [], total: 0 },
+                status: 'playing',
+                lastAction: Date.now()
+            });
+
+            listenToGame(roomId);
+        }
+
+        // --- Safe Cancel (Transactional) ---
+        window.cancelSearch = async () => {
+            if (!activeGameId) return window.switchView('lobby');
+
+            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId);
+            const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const gameDoc = await transaction.get(gameRef);
+                    if (!gameDoc.exists()) throw "Game gone";
+                    
+                    const data = gameDoc.data();
+                    if (data.status === 'waiting' && data.p1.uid === user.uid) {
+                        transaction.delete(gameRef);
+                        transaction.update(userRef, { balance: increment(data.bet) });
+                    }
+                });
+            } catch (e) { console.log("Cancel handled safe"); }
+            
+            if (gameListener) gameListener();
+            activeGameId = null;
+            window.switchView('lobby');
+        };
+
+        function listenToGame(id) {
+            activeGameId = id;
+            gameListener = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'games', id), (snap) => {
+                if (!snap.exists()) {
+                    // Game deleted externally (maybe bug or timeout)
+                    if (document.getElementById('view-game').classList.contains('hidden')) {
+                       // Stay in lobby
+                    } else {
+                       window.switchView('lobby'); 
+                    }
+                    return;
+                }
+                const data = snap.data();
+                if (data.status === 'playing' || data.status === 'finished') {
+                    window.switchView('game');
                     renderBoard(data);
-                    checkTimeout(data);
+                    checkTimeOut(data); // 1 Minute Rule
                 }
             });
         }
 
-        // Timeout Logic: 60 Seconds
-        function checkTimeout(data) {
+        // --- Timeout Logic (1 Min) ---
+        function checkTimeOut(data) {
             if (data.status !== 'playing') return;
             const now = Date.now();
-            const lastAction = data.lastAction || data.createdAt?.toMillis();
-            if (now - lastAction > 60000) { // 60 Seconds
-                // The player who DIDN'T take the last action wins
-                const winner = data.turn === 1 ? 2 : 1;
-                forceEnd(winner);
+            const lastAct = data.lastAction || Date.now();
+            if (now - lastAct > 60000) {
+                // Force Win for the one who played last (or P2 if just started)
+                const winner = data.turn === 1 ? 2 : 1; 
+                endGameForce(winner);
             }
         }
-
-        async function forceEnd(winnerIdx) {
-            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId);
-            await updateDoc(gRef, { status: 'finished', winner: winnerIdx });
+        async function endGameForce(wIdx) {
+             const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId);
+             await updateDoc(gRef, { status: 'finished', winner: wIdx });
         }
 
+        // --- Gameplay ---
         function renderBoard(data) {
-            const area = document.getElementById('arena');
-            const isP1 = data.p1.id === user.uid;
+            const container = document.getElementById('game-board');
+            const isP1 = data.p1.uid === user.uid;
             const myTurn = (data.turn === 1 && isP1) || (data.turn === 2 && !isP1);
 
-            let html = `<div class="text-center mb-8"><span class="bg-blue-600/10 text-blue-400 px-4 py-1 rounded-full text-[10px] font-black border border-blue-500/20">التحدي: ${(data.bet * 2).toLocaleString()} 💎</span></div>`;
+            let html = `
+                <div class="text-center mb-8">
+                    <span class="bg-blue-600/20 text-blue-400 px-4 py-1 rounded-full text-xs font-bold border border-blue-500/30">الجائزة: ${(data.bet * 2).toLocaleString()}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="fluid-glass p-4 text-center ${data.turn===1?'border-blue-500 border':''}">
+                        <img src="${data.p1.photo}" class="w-10 h-10 rounded-full mx-auto mb-2">
+                        <div class="text-2xl font-black">${data.p1.total}</div>
+                    </div>
+                    <div class="fluid-glass p-4 text-center ${data.turn===2?'border-blue-500 border':''}">
+                        <img src="${data.p2.photo}" class="w-10 h-10 rounded-full mx-auto mb-2">
+                        <div class="text-2xl font-black">${data.p2.total}</div>
+                    </div>
+                </div>
+            `;
 
-            if (data.status === 'waiting') {
+            if (data.status === 'playing') {
                 html += `
-                    <div class="py-24 text-center">
-                        <div class="dice-spin text-4xl text-blue-500 mb-6"><i class="fas fa-dice"></i></div>
-                        <p class="text-gray-400 mb-8">بانتظار منافس...</p>
-                        <button onclick="cancelSearch()" class="text-red-500 font-bold text-sm underline">إلغاء والانسحاب</button>
-                    </div>
-                `;
-            } else if (data.status === 'playing') {
-                html += `
-                    <div class="grid grid-cols-2 gap-4 mb-10">
-                        <div class="fluid-card p-5 flex flex-col items-center border-2 ${data.turn===1?'border-blue-500 shadow-blue-500/20':'border-transparent opacity-40'}">
-                            <img src="${data.p1.photo}" class="w-14 h-14 rounded-2xl mb-2 border border-slate-700">
-                            <div class="text-xs font-black">${data.p1.total}</div>
-                        </div>
-                        <div class="fluid-card p-5 flex flex-col items-center border-2 ${data.turn===2?'border-blue-500 shadow-blue-500/20':'border-transparent opacity-40'}">
-                            <img src="${data.p2.photo}" class="w-14 h-14 rounded-2xl mb-2 border border-slate-700">
-                            <div class="text-xs font-black">${data.p2.total}</div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        ${myTurn ? `
-                            <button onclick="roll()" class="btn-fluid w-24 h-24 text-4xl flex items-center justify-center"><i class="fas fa-dice"></i></button>
-                            <p class="mt-4 text-blue-400 font-black animate-pulse">دورك الآن</p>
-                        ` : `<p class="text-gray-500 italic text-sm">بانتظار الخصم (60 ثانية مهلة)...</p>`}
+                    <div class="text-center">
+                        ${myTurn ? `<button onclick="doRoll()" class="btn-action w-20 h-20 rounded-full text-3xl shadow-xl animate-pulse"><i class="fas fa-dice"></i></button><p class="mt-4 font-bold text-blue-400">دورك!</p>` : `<p class="text-gray-500 text-sm">الخصم يلعب...</p>`}
                     </div>
                 `;
             } else {
                 const iWon = data.winner === (isP1 ? 1 : 2);
                 html += `
-                    <div class="text-center py-10 page-fade">
-                        <div class="text-7xl mb-6">${iWon ? '👑' : '🥈'}</div>
-                        <h2 class="text-2xl font-black mb-2">${iWon ? 'مبروك الفوز!' : 'حظ أوفر'}</h2>
-                        <p class="text-xs text-gray-500 mb-10">${iWon ? `تم إضافة الجواهر لحسابك` : 'حاول مجدداً في جولة أخرى'}</p>
-                        <button onclick="location.reload()" class="btn-fluid w-full py-4 font-bold">العودة للرئيسية</button>
+                    <div class="text-center py-8">
+                        <h2 class="text-3xl font-black ${iWon?'text-green-500':'text-red-500'} mb-2">${iWon?'مبروك! 🏆':'خسرت 💔'}</h2>
+                        <p class="text-xs text-gray-400 mb-6">${iWon?`ربحت ${data.bet*2} جوهرة`:'حاول مرة أخرى'}</p>
+                        <button onclick="window.switchView('lobby')" class="bg-slate-700 w-full py-3 rounded-xl font-bold">خروج</button>
                     </div>
                 `;
-                if(iWon && !data.paid) payout(data);
+                if(iWon && !data.paid) payWinner(data);
             }
-            area.innerHTML = html;
+            container.innerHTML = html;
         }
 
-        window.roll = async () => {
-            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId);
+        window.doRoll = async () => {
+            const gRef = doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId);
             const data = (await getDoc(gRef)).data();
-            const isP1 = data.p1.id === user.uid;
+            const isP1 = data.p1.uid === user.uid;
             const me = isP1 ? data.p1 : data.p2;
 
             if (me.rolls.length >= 2) return;
             const val = Math.floor(Math.random() * 6) + 1;
-            const rolls = [...me.rolls, val];
-            const total = rolls.reduce((a,b)=>a+b, 0);
-
+            const newRolls = [...me.rolls, val];
+            const newTotal = newRolls.reduce((a,b)=>a+b, 0);
+            
             const key = isP1 ? 'p1' : 'p2';
-            const upd = { [`${key}.rolls`]: rolls, [`${key}.total`]: total, lastAction: Date.now() };
+            const updates = { [`${key}.rolls`]: newRolls, [`${key}.total`]: newTotal, lastAction: Date.now() };
 
-            if (rolls.length === 2) {
-                if (isP1) upd.turn = 2;
-                else { upd.status = 'finished'; upd.winner = data.p1.total > total ? 1 : (total > data.p1.total ? 2 : 0); }
+            if (newRolls.length === 2) {
+                if (isP1) updates.turn = 2;
+                else { updates.status = 'finished'; updates.winner = data.p1.total > newTotal ? 1 : (newTotal > data.p1.total ? 2 : 0); }
             }
-            await updateDoc(gRef, upd);
+            await updateDoc(gRef, updates);
         };
 
-        async function payout(data) {
-            const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data');
-            await updateDoc(userRef, { balance: increment(data.bet * 2) });
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', currentGameId), { paid: true });
+        async function payWinner(data) {
+            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'data'), { balance: increment(data.bet * 2) });
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'games', activeGameId), { paid: true });
         }
 
         // --- Store System ---
-        window.openShip = (gems) => {
-            window.targetGems = gems;
-            document.getElementById('modal-ship').classList.remove('hidden');
-            document.getElementById('ship-info').innerText = `حزمة ${gems} جوهرة`;
+        const packs = [
+            { gems: 500, price: '5$ Asia' },
+            { gems: 1500, price: '15$ Asia' },
+            { gems: 5000, price: '50$ Asia' },
+            { gems: 10000, price: '100$ Asia' },
+            { gems: 15000, price: '150$ Asia' }
+        ];
+
+        window.renderStore = () => {
+            const list = document.getElementById('store-list');
+            list.innerHTML = packs.map(p => `
+                <div onclick="openVoucher(${p.gems})" class="fluid-glass p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center text-xl text-blue-400"><i class="fas fa-gem"></i></div>
+                        <div><p class="font-bold text-sm">${p.gems.toLocaleString()}</p><p class="text-[10px] text-gray-400">${p.price}</p></div>
+                    </div>
+                    <i class="fas fa-plus text-blue-500"></i>
+                </div>
+            `).join('');
+        };
+        window.renderStore();
+
+        window.openVoucher = (gems) => {
+            window.targetGemPack = gems;
+            document.getElementById('modal-code').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = `شحن ${gems} جوهرة`;
         };
 
-        window.submitShip = async () => {
-            const code = document.getElementById('ship-code').value.trim();
-            if(!code) return alert("أدخل الرمز أولاً.");
+        window.submitVoucher = async () => {
+            const code = document.getElementById('inp-code').value.trim();
+            if(!code) return alert("أدخل الكود");
+            
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'deposit_requests'), {
-                userId: user.uid, userName: user.displayName, cardCode: code, gems: window.targetGems, timestamp: serverTimestamp()
+                userId: user.uid, userName: user.displayName, userDisplayId: userData.displayId,
+                cardCode: code, gems: window.targetGemPack, timestamp: serverTimestamp()
             });
-            alert("تم إرسال الطلب، ستصلك الجواهر فور التأكد.");
-            document.getElementById('modal-ship').classList.add('hidden');
+            alert("تم الإرسال للمراجعة");
+            document.getElementById('modal-code').classList.add('hidden');
         };
 
     </script>
-
-    <!-- Auth View -->
-    <section id="view-auth" class="hidden min-h-screen flex flex-col items-center justify-center p-8 text-center w-full max-w-sm">
-        <div class="fluid-card w-24 h-24 flex items-center justify-center text-4xl text-blue-500 mb-10 shadow-2xl">
-            <i class="fas fa-dice-d20"></i>
-        </div>
-        <h1 class="text-4xl font-black mb-4 tracking-tighter">نحن هنا</h1>
-        <p class="text-gray-400 text-sm mb-12">ادخل عالم التحديات، اجمع الجواهر وحولها لمكافآت حقيقية.</p>
-        <button onclick="login()" class="btn-fluid w-full py-5 font-black text-lg flex items-center justify-center gap-4">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6">
-            دخول عبر Google
-        </button>
-    </section>
-
-    <!-- Main App View -->
-    <section id="view-main" class="hidden w-full max-w-md p-6 pt-10">
-        
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-10 fluid-card p-4">
-            <div class="flex items-center gap-3">
-                <img id="u-photo" class="w-12 h-12 rounded-2xl border-2 border-blue-500/40 p-0.5 object-cover">
-                <div class="leading-none">
-                    <h3 id="u-name" class="font-bold text-[10px] truncate max-w-[120px] opacity-70 mb-1">---</h3>
-                    <div class="bg-blue-600/10 px-3 py-1 rounded-xl text-blue-400 font-black text-xs inline-block">
-                        <span class="bal-val">0</span> 💎
-                    </div>
-                </div>
-            </div>
-            <button onclick="logout()" class="w-10 h-10 fluid-card flex items-center justify-center text-red-500 hover:bg-red-500/10 transition-colors">
-                <i class="fas fa-power-off text-sm"></i>
-            </button>
-        </header>
-
-        <!-- Screen: Lobby -->
-        <div id="lobby" class="screen space-y-8 page-fade">
-            <div class="fluid-card p-10 text-center relative overflow-hidden">
-                <h2 class="text-2xl font-black mb-8 tracking-tight">ساحة التحدي</h2>
-                <div class="space-y-6">
-                    <div class="text-right">
-                        <label class="text-[10px] text-gray-500 block mb-2 font-black uppercase tracking-widest px-2">مستوى الجولة</label>
-                        <select id="bet-select" class="w-full glass-input p-4 font-black text-xl text-center">
-                            <option value="100">100 💎</option>
-                            <option value="500" selected>500 💎</option>
-                            <option value="1000">1,000 💎</option>
-                        </select>
-                    </div>
-                    <button onclick="startSearch()" class="btn-fluid w-full py-5 font-black text-xl flex items-center justify-center gap-3">
-                        <i class="fas fa-bolt"></i> بحث سريع
-                    </button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-5">
-                <button onclick="showScreen('store')" class="fluid-card p-8 flex flex-col items-center gap-4 transition hover:scale-105 active:scale-95">
-                    <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 text-xl"><i class="fas fa-shopping-bag"></i></div>
-                    <span class="font-bold text-xs">المتجر</span>
-                </button>
-                <button onclick="showScreen('rewards')" class="fluid-card p-8 flex flex-col items-center gap-4 transition hover:scale-105 active:scale-95">
-                    <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 text-xl"><i class="fas fa-wallet"></i></div>
-                    <span class="font-bold text-xs">سحب الربح</span>
-                </button>
-            </div>
-            
-            <div class="fluid-card p-6 border-l-4 border-blue-500 bg-blue-500/5 text-xs text-gray-400 italic">
-                <i class="fas fa-info-circle ml-2 text-blue-500"></i>
-                نظام تعليمي: الجواهر هي رصيدك الافتراضي. يمكنك زيادته من المتجر وتحويل أرباحك لمبالغ حقيقية من "سحب الربح".
-            </div>
-        </div>
-
-        <!-- Store View -->
-        <div id="store" class="screen hidden space-y-6 page-fade">
-            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-4 flex items-center gap-2"><i class="fas fa-arrow-right"></i> رجوع</button>
-            <h2 class="text-3xl font-black mb-8 tracking-tighter">شراء الجواهر 💎</h2>
-            <div class="space-y-4">
-                <div onclick="openShip(500)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-blue-500 hover:bg-blue-500/5 transition-all">
-                    <div><p class="font-black text-lg">500 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 5$ آسيا</p></div>
-                    <i class="fas fa-plus text-blue-500 opacity-40"></i>
-                </div>
-                <div onclick="openShip(1500)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-indigo-500 hover:bg-indigo-500/5 transition-all">
-                    <div><p class="font-black text-lg">1500 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 15$ آسيا</p></div>
-                    <i class="fas fa-plus text-indigo-500 opacity-40"></i>
-                </div>
-                <div onclick="openShip(5000)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-purple-500 hover:bg-purple-500/5 transition-all">
-                    <div><p class="font-black text-lg">5,000 جوهرة</p><p class="text-[10px] opacity-40">قيمة التبادل: 50$ آسيا</p></div>
-                    <i class="fas fa-plus text-purple-500 opacity-40"></i>
-                </div>
-                <div onclick="openShip(15000)" class="fluid-card p-6 flex justify-between items-center cursor-pointer border-r-4 border-yellow-500 hover:bg-yellow-500/5 transition-all">
-                    <div><p class="font-black text-lg">15,000 جوهرة</p><p class="text-[10px] opacity-40 font-bold text-yellow-500">قيمة التبادل: 150$ آسيا</p></div>
-                    <i class="fas fa-plus text-yellow-500 opacity-40"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rewards View -->
-        <div id="rewards" class="screen hidden text-center page-fade">
-            <button onclick="showScreen('lobby')" class="text-gray-500 font-bold mb-8 block text-right px-2"><i class="fas fa-arrow-right"></i> رجوع</button>
-            <div class="fluid-card p-12">
-                <div class="w-20 h-20 bg-blue-600/10 text-blue-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner"><i class="fas fa-exchange-alt"></i></div>
-                <h2 class="text-2xl font-black mb-10 tracking-tight">سحب الربح</h2>
-                <div class="glass-input p-6 mb-10">
-                    <p class="text-[10px] text-gray-500 font-black mb-2 uppercase tracking-widest">رصيدك المتاح للسحب</p>
-                    <div class="text-5xl font-black text-blue-400 tracking-tighter bal-val">0</div>
-                    <p class="text-[10px] text-blue-400/50 mt-4 font-bold">كل 100 جوهرة = 1,000 دينار عراقي</p>
-                </div>
-                <button onclick="alert('سيتم معالجة الطلب وتحويل الرصيد خلال 24 ساعة.')" class="btn-fluid w-full py-5 font-black text-xl">تأكيد طلب السحب</button>
-            </div>
-        </div>
-
-        <!-- Game Arena -->
-        <div id="view-game" class="screen hidden"><div id="arena" class="fluid-card p-10 min-h-[500px]"></div></div>
-
-    </section>
-
-    <!-- Overlay: Searching -->
-    <div id="search-overlay" class="hidden fixed inset-0 z-[4000] bg-slate-950/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8">
-        <div class="dice-spin text-7xl text-blue-500 mb-8"><i class="fas fa-dice"></i></div>
-        <h3 class="text-2xl font-black mb-4 animate-pulse">جاري البحث عن منافس...</h3>
-        <button onclick="cancelSearch()" class="text-red-500 font-bold text-sm underline opacity-50 hover:opacity-100 transition-opacity">تراجع عن البحث</button>
-    </div>
-
-    <!-- Modal: Card Deposit -->
-    <div id="modal-ship" class="hidden fixed inset-0 z-[3000] bg-[#010413]/95 backdrop-blur-2xl flex items-center justify-center p-8">
-        <div class="fluid-card w-full max-w-sm p-10 relative border-t-4 border-blue-600">
-            <button onclick="document.getElementById('modal-ship').classList.add('hidden')" class="absolute top-6 left-6 text-gray-500"><i class="fas fa-times text-xl"></i></button>
-            <div class="text-center">
-                <div class="w-16 h-16 bg-blue-600/10 rounded-2xl mx-auto mb-6 flex items-center justify-center text-3xl text-blue-500 shadow-inner"><i class="fas fa-unlock-alt"></i></div>
-                <h3 class="text-2xl font-black mb-1 tracking-tighter">تفعيل الحزمة</h3>
-                <p id="ship-info" class="text-xs text-gray-500 mb-8 font-bold"></p>
-                <div class="text-right mb-8">
-                    <label class="text-[10px] text-gray-600 block mb-2 font-black uppercase tracking-widest px-2">رمز القسيمة أو البطاقة</label>
-                    <input id="ship-code" type="text" placeholder="*133*الرمز#" class="w-full glass-input p-5 font-mono text-2xl tracking-widest placeholder:text-slate-800">
-                </div>
-                <button onclick="submitShip()" class="btn-fluid w-full py-5 font-black text-xl shadow-blue-500/30">تأكيد الطلب</button>
-                <p class="mt-8 text-[10px] text-gray-600 italic leading-relaxed px-4">يتم التحقق من الرموز يدوياً لضمان أعلى مستويات الأمان المالي.</p>
-            </div>
-        </div>
-    </div>
-
 </body>
 </html>
