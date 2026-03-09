@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Younis Digital Identity</title>
+    <title>Abu Al-Noos Digital Identity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
@@ -13,11 +13,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;700&family=Tajawal:wght@300;500;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;700&family=Tajawal:wght@300;500;800&display=swap');
 
         :root {
             --fire-glow: #ff4d00;
-            --dark-bg: #0a0a0a;
+            --gold: #ffd700;
+            --dark-bg: #050505;
         }
 
         body {
@@ -41,114 +42,137 @@
             min-height: 100%;
             z-index: -1;
             object-fit: cover;
-            filter: brightness(0.5);
+            filter: brightness(0.4) contrast(1.1);
         }
 
-        /* Fixed Card (No Rotation) */
+        /* Cinema Entrance */
+        .entrance-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, #1a0a00 0%, #000 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .cinema-name {
+            font-size: 4.5rem;
+            font-family: 'Aref Ruqaa', serif;
+            color: transparent;
+            background: linear-gradient(to bottom, #fff 20%, var(--fire-glow) 80%);
+            -webkit-background-clip: text;
+            filter: drop-shadow(0 0 15px var(--fire-glow));
+            letter-spacing: 5px;
+            animation: cinemaZoom 2.5s forwards ease-in-out;
+            opacity: 0;
+        }
+
+        @keyframes cinemaZoom {
+            0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+            50% { opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1.1); opacity: 0; filter: blur(5px); }
+        }
+
+        /* Premium Static Card */
         .card-static {
-            width: 350px;
-            height: 210px;
-            border-radius: 18px;
+            width: 360px;
+            height: 215px;
+            border-radius: 20px;
             border: 1px solid rgba(255, 77, 0, 0.4);
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(255, 77, 0, 0.15);
-            background: linear-gradient(135deg, rgba(15,15,15,0.85) 0%, rgba(35,15,5,0.7) 100%);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(255, 77, 0, 0.1);
+            background: rgba(10, 10, 10, 0.65);
+            backdrop-filter: blur(15px);
             display: flex;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
             position: relative;
+            animation: cardSlideUp 1s 2.5s both;
+        }
+
+        @keyframes cardSlideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .profile-img {
-            width: 125px;
+            width: 135px;
             height: 100%;
             object-fit: cover;
-            border-radius: 14px;
-            box-shadow: 0 0 20px rgba(255, 77, 0, 0.4);
-            mask-image: linear-gradient(to right, black 75%, transparent 100%);
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(255, 77, 0, 0.5);
+            mask-image: linear-gradient(to right, black 80%, transparent 100%);
         }
 
         .card-content {
             flex: 1;
-            padding-right: 18px;
+            padding-right: 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
         .name-title {
-            font-family: 'Reem Kufi', sans-serif;
-            font-size: 2.3rem;
-            color: white;
-            text-shadow: 0 0 12px var(--fire-glow);
-            margin-bottom: 2px;
+            font-family: 'Aref Ruqaa', serif;
+            font-size: 2.2rem;
+            color: #fff;
+            text-shadow: 0 0 15px var(--fire-glow);
+            margin-bottom: 0px;
+            white-space: nowrap;
         }
 
         .social-sidebar {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            margin-left: 5px;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 25px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 77, 0, 0.2);
+            gap: 15px;
+            margin-left: 2px;
+            background: rgba(0,0,0,0.6);
+            padding: 12px 8px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 77, 0, 0.3);
         }
 
         .social-sidebar i {
-            font-size: 1.3rem;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: #ddd;
+            font-size: 1.4rem;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #efefef;
             cursor: pointer;
         }
 
         .social-sidebar i:hover {
             color: var(--fire-glow);
-            transform: scale(1.3) rotate(5deg);
+            transform: scale(1.3) rotate(8deg);
+            filter: drop-shadow(0 0 5px var(--fire-glow));
         }
 
-        /* Vault Overlay */
+        /* Vault Elements */
         .vault-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.96);
+            inset: 0;
+            background: rgba(0,0,0,0.97);
             z-index: 1000;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(20px);
-        }
-
-        .pin-display {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 35px;
+            backdrop-filter: blur(25px);
         }
 
         .pin-dot {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             border: 2px solid var(--fire-glow);
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
         .pin-dot.active {
             background: var(--fire-glow);
-            box-shadow: 0 0 18px var(--fire-glow);
+            box-shadow: 0 0 15px var(--fire-glow);
             transform: scale(1.2);
-        }
-
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
         }
 
         .key {
@@ -162,117 +186,71 @@
             font-size: 1.6rem;
             cursor: pointer;
             transition: 0.2s;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .key:active {
-            background: var(--fire-glow);
-            transform: scale(0.85);
-            border-color: transparent;
-        }
+        .key:active { background: var(--fire-glow); transform: scale(0.9); }
 
-        /* Vault View */
         .vault-content {
-            width: 92%;
-            max-width: 480px;
+            width: 90%;
+            max-width: 500px;
             height: 85vh;
-            background: #0d0d0d;
-            border-radius: 30px;
+            background: #080808;
+            border-radius: 35px;
             border: 1px solid rgba(255, 77, 0, 0.5);
             padding: 25px;
             display: none;
             flex-direction: column;
-            overflow: hidden;
-        }
-
-        .account-list-container {
-            flex: 1;
-            overflow-y: auto;
-            margin: 15px 0;
-            padding-left: 5px;
         }
 
         .account-card {
             background: rgba(255,255,255,0.04);
-            border-radius: 18px;
+            border-radius: 20px;
             padding: 18px;
             margin-bottom: 12px;
-            border-right: 5px solid var(--fire-glow);
+            border-right: 6px solid var(--fire-glow);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: 0.3s;
-        }
-
-        .account-card:hover {
-            background: rgba(255,255,255,0.08);
         }
 
         .copy-btn {
-            background: var(--fire-glow);
-            padding: 6px 14px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: bold;
+            background: linear-gradient(to right, var(--fire-glow), #ff8c00);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
             cursor: pointer;
-            transition: 0.3s;
         }
 
-        .copy-btn:hover {
-            filter: brightness(1.2);
-        }
-
-        /* Intro Screen */
-        .entrance-screen {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .glitch-text {
-            font-size: 3.5rem;
-            font-family: 'Reem Kufi';
-            color: var(--fire-glow);
-            text-shadow: 0 0 20px var(--fire-glow);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1.05); }
-        }
-
-        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--fire-glow); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Entrance Screen -->
+    <!-- Cinema Entrance -->
     <div id="entrance" class="entrance-screen">
-        <div class="glitch-text">يونس</div>
+        <div class="cinema-name">أبو النوس</div>
+        <div class="mt-4 text-xs text-orange-500 tracking-[10px] opacity-50 uppercase">Loading Experience</div>
     </div>
 
-    <!-- Background Video (Updated) -->
+    <!-- Background Video -->
     <video autoplay muted loop playsinline id="bg-video">
         <source src="https://b.top4top.io/m_3720u3vo50.mp4" type="video/mp4">
     </video>
 
     <!-- Main Card -->
     <div class="card-static">
-        <img src="https://e.top4top.io/p_3720kj9sq0.png" class="profile-img" alt="Younis">
+        <img src="https://e.top4top.io/p_3720kj9sq0.png" class="profile-img" alt="Abu Al-Noos">
         
         <div class="card-content">
-            <div class="name-title">يونس</div>
-            <p class="text-[10px] text-gray-400 opacity-60 tracking-widest">DIGITAL VAULT CARD</p>
+            <div class="name-title">أبو النوس</div>
+            <p class="text-[9px] text-gray-400 opacity-60 tracking-[3px]">PREMIUM VAULT CARD</p>
             
-            <div class="mt-5 flex items-center gap-3">
-                <i class="fas fa-barcode text-2xl opacity-40"></i>
-                <div class="h-[1px] flex-1 bg-gradient-to-r from-orange-600/50 to-transparent"></div>
+            <div class="mt-6 flex items-center gap-3">
+                <i class="fas fa-fingerprint text-2xl text-orange-600 opacity-60"></i>
+                <div class="h-[1px] flex-1 bg-gradient-to-r from-orange-600/60 to-transparent"></div>
             </div>
         </div>
 
@@ -288,14 +266,14 @@
     <!-- Vault Screen -->
     <div id="vaultOverlay" class="vault-overlay">
         <div id="pinSection">
-            <h2 class="text-xl mb-10 text-center text-orange-500 font-bold">الخزينة الرقمية المحمية</h2>
-            <div class="pin-display">
+            <h2 class="text-xl mb-12 text-center text-orange-500 font-bold tracking-widest">خزينة أبو النوس</h2>
+            <div class="flex gap-4 justify-center mb-10">
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
                 <div class="pin-dot"></div>
             </div>
-            <div class="keypad">
+            <div class="keypad grid grid-cols-3 gap-5">
                 <div class="key" onclick="pressKey('1')">1</div>
                 <div class="key" onclick="pressKey('2')">2</div>
                 <div class="key" onclick="pressKey('3')">3</div>
@@ -309,36 +287,36 @@
                 <div class="key" onclick="pressKey('0')">0</div>
                 <div class="key" onclick="resetPin()"><i class="fas fa-backspace"></i></div>
             </div>
-            <button class="mt-10 text-white/30 block mx-auto hover:text-white transition-colors" onclick="closeVault()">إغلاق</button>
+            <button class="mt-12 text-white/20 block mx-auto hover:text-white transition-all" onclick="closeVault()">إغلاق الخزينة</button>
         </div>
 
         <!-- Inside Vault -->
         <div id="vaultContent" class="vault-content">
-            <div class="flex justify-between items-center mb-6 border-b border-orange-900/50 pb-4">
+            <div class="flex justify-between items-center mb-8 border-b border-orange-900/40 pb-5">
                 <div>
-                    <h2 class="text-xl font-bold">بياناتك السرية</h2>
-                    <p class="text-[10px] text-gray-500">مشفرة ومحفوظة للأبد</p>
+                    <h2 class="text-xl font-bold">الحسابات المؤمنة</h2>
+                    <p class="text-[10px] text-orange-600/60 uppercase tracking-widest">Cloud Encrypted</p>
                 </div>
-                <i class="fas fa-times cursor-pointer text-xl hover:text-orange-500" onclick="closeVault()"></i>
+                <i class="fas fa-shield-halved cursor-pointer text-2xl text-orange-500" onclick="closeVault()"></i>
             </div>
             
-            <div class="account-list-container" id="accountsList">
-                <div class="text-center py-10 opacity-30">جاري مزامنة السحابة...</div>
+            <div class="flex-1 overflow-y-auto mb-4" id="accountsList">
+                <div class="text-center py-20 opacity-20 italic">جاري تحميل البيانات من السحابة...</div>
             </div>
 
-            <button class="w-full bg-orange-600/10 border border-orange-600/50 py-4 rounded-2xl mt-2 hover:bg-orange-600 transition-all font-bold" onclick="showAddForm()">
-                <i class="fas fa-plus-circle ml-2"></i> إضافة حساب للخزنة
+            <button class="w-full bg-orange-600/10 border border-orange-600/40 py-4 rounded-2xl hover:bg-orange-600 transition-all font-bold text-white shadow-lg" onclick="showAddForm()">
+                <i class="fas fa-plus-circle ml-2"></i> إضافة حساب جديد
             </button>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-orange-600 text-white px-8 py-3 rounded-full shadow-2xl opacity-0 transition-all z-[9999] pointer-events-none font-bold">
-        تم النسخ بنجاح
+    <!-- Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white text-black px-10 py-3 rounded-2xl shadow-2xl opacity-0 transition-all z-[9999] pointer-events-none font-bold">
+        تم النسخ
     </div>
 
     <script>
-        // Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA262s_QVEBEuGmht94eXO1wEDNkBPojCE",
             authDomain: "green-db03c.firebaseapp.com",
@@ -351,19 +329,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        const appId = "younis-master-card";
+        const appId = "abualnoos-secure-vault";
 
         let currentPin = "";
         const correctPin = "9966";
 
         window.addEventListener('load', () => {
-            // Entrance handling
             setTimeout(() => {
                 const ent = document.getElementById('entrance');
-                ent.style.transition = 'opacity 1s ease';
+                ent.style.transition = 'opacity 1.2s ease-in-out';
                 ent.style.opacity = '0';
-                setTimeout(() => ent.style.display = 'none', 1000);
-            }, 2000);
+                setTimeout(() => ent.style.display = 'none', 1200);
+            }, 3000);
             
             auth.signInAnonymously().catch(e => console.error("Auth:", e));
         });
@@ -383,7 +360,9 @@
             if (currentPin.length < 4) {
                 currentPin += num;
                 updatePinDisplay();
-                if (currentPin.length === 4) validatePin();
+                if (currentPin.length === 4) {
+                    setTimeout(validatePin, 300);
+                }
             }
         }
 
@@ -406,8 +385,8 @@
                 document.getElementById('vaultContent').style.display = 'flex';
                 loadVaultData();
             } else {
-                showToast("الرمز غير صحيح");
-                setTimeout(resetPin, 500);
+                showToast("الرمز خطأ");
+                resetPin();
             }
         }
 
@@ -415,11 +394,11 @@
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.style.opacity = '1';
-            t.style.bottom = '20px';
+            t.style.bottom = '30px';
             setTimeout(() => {
                 t.style.opacity = '0';
                 t.style.bottom = '10px';
-            }, 2500);
+            }, 2000);
         }
 
         function copyToClipboard(text) {
@@ -429,20 +408,14 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-        }
-
-        function copyFormatted(email, pass) {
-            const formattedText = `الحساب: ${email}\nكلمة السر: ${pass}`;
-            copyToClipboard(formattedText);
-            showToast("تم النسخ بنجاح");
+            showToast("تم نسخ البيانات بنجاح");
         }
 
         async function loadVaultData() {
             const user = auth.currentUser;
             if (!user) return;
-
             const list = document.getElementById('accountsList');
-            list.innerHTML = '<div class="text-center py-10 opacity-40">جاري تحميل خزنتك...</div>';
+            list.innerHTML = '<div class="text-center py-20 opacity-40">جاري الاتصال بالسحابة...</div>';
 
             try {
                 const snapshot = await db.collection('artifacts').doc(appId)
@@ -451,56 +424,51 @@
                 
                 list.innerHTML = "";
                 if (snapshot.empty) {
-                    list.innerHTML = '<div class="text-center py-20 opacity-20">خزنتك لا تحتوي على حسابات بعد</div>';
+                    list.innerHTML = '<div class="text-center py-20 opacity-20">الخزينة فارغة حالياً</div>';
                     return;
                 }
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const card = document.createElement('div');
-                    card.className = "account-card";
+                    card.className = "account-card shadow-lg";
                     card.innerHTML = `
                         <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center">
-                                <i class="fas fa-key text-orange-500 text-sm"></i>
+                            <div class="w-12 h-12 rounded-2xl bg-orange-600/10 flex items-center justify-center border border-orange-600/20">
+                                <i class="fas fa-user-shield text-orange-500"></i>
                             </div>
                             <div>
                                 <div class="text-sm font-bold text-white">${data.platform}</div>
-                                <div class="text-[10px] text-gray-500 truncate w-32">${data.email}</div>
+                                <div class="text-[10px] text-gray-500 font-mono">${data.email}</div>
                             </div>
                         </div>
-                        <div class="copy-btn" onclick="copyFormatted('${data.email}', '${data.password}')">نسخ البيانات</div>
+                        <div class="copy-btn active:scale-95 transition-transform" onclick="copyToClipboard('البريد: ${data.email}\\nكلمة السر: ${data.password}')">نسخ</div>
                     `;
                     list.appendChild(card);
                 });
             } catch (e) {
                 console.error(e);
-                list.innerHTML = "تعذر تحميل البيانات السحابية";
+                list.innerHTML = "خطأ في مزامنة البيانات";
             }
         }
 
         async function showAddForm() {
-            const platform = prompt("اسم التطبيق أو المنصة:");
+            const platform = prompt("اسم التطبيق:");
             if (!platform) return;
-            const email = prompt("البريد الإلكتروني أو رقم الهاتف:");
+            const email = prompt("البريد أو الهاتف:");
             const password = prompt("كلمة السر:");
 
             if (email && password) {
                 const user = auth.currentUser;
                 if (!user) return;
-                
                 try {
                     await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('vault').add({
-                        platform,
-                        email,
-                        password,
+                        platform, email, password,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     loadVaultData();
-                    showToast("تم الحفظ في السحابة");
-                } catch (e) {
-                    alert("خطأ في الاتصال، حاول لاحقاً");
-                }
+                    showToast("تم الحفظ آمن");
+                } catch (e) { alert("حدث خطأ أثناء الحفظ"); }
             }
         }
     </script>
