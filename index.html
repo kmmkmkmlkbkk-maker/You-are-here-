@@ -2,450 +2,507 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Elite Bet | منصة الكازينو</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Younis Digital Identity</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <!-- Confetti for jackpots -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;700&family=Tajawal:wght@300;500;800&display=swap');
+
         :root {
-            --bg-dark: #0a0a0a;
-            --panel-bg: #171717;
-            --brand-green: #10b981;
-            --brand-gold: #f59e0b;
+            --fire-glow: #ff4d00;
+            --dark-bg: #0a0a0a;
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-dark);
-            color: #ffffff;
-            user-select: none;
-            overflow-x: hidden;
-        }
-
-        /* طراحی شیشه ای برای پنل ها (Glass Panel Design) */
-        .casino-panel {
-            background: rgba(23, 23, 23, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .bottom-nav {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .nav-item.active { color: var(--brand-green); }
-
-        /* دکمه های شرط بندی (Betting Buttons) */
-        .odds-btn {
-            background: #262626;
-            border: 1px solid #3f3f46;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-        .odds-btn:active { transform: scale(0.95); background: var(--brand-green); border-color: var(--brand-green); }
-
-        /* ماشین اسلات (Slot Machine Styles) */
-        .slot-machine {
-            background: linear-gradient(180deg, #b45309, #f59e0b);
-            padding: 4px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.3);
-        }
-        .slot-screen {
-            background: #000;
-            border-radius: 16px;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8);
+            margin: 0;
+            padding: 0;
+            background-color: var(--dark-bg);
+            font-family: 'Tajawal', sans-serif;
+            overflow: hidden;
+            color: white;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 20px;
+            align-items: center;
+            height: 100vh;
         }
-        .reel {
-            width: 70px;
-            height: 90px;
-            background: #fff;
-            border-radius: 8px;
+
+        #bg-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            filter: brightness(0.5);
+        }
+
+        /* Fixed Card (No Rotation) */
+        .card-static {
+            width: 350px;
+            height: 210px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 77, 0, 0.4);
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(255, 77, 0, 0.15);
+            background: linear-gradient(135deg, rgba(15,15,15,0.85) 0%, rgba(35,15,5,0.7) 100%);
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            box-shadow: inset 0 5px 15px rgba(0,0,0,0.3);
+            padding: 15px;
             position: relative;
+        }
+
+        .profile-img {
+            width: 125px;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(255, 77, 0, 0.4);
+            mask-image: linear-gradient(to right, black 75%, transparent 100%);
+        }
+
+        .card-content {
+            flex: 1;
+            padding-right: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .name-title {
+            font-family: 'Reem Kufi', sans-serif;
+            font-size: 2.3rem;
+            color: white;
+            text-shadow: 0 0 12px var(--fire-glow);
+            margin-bottom: 2px;
+        }
+
+        .social-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-left: 5px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 25px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 77, 0, 0.2);
+        }
+
+        .social-sidebar i {
+            font-size: 1.3rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #ddd;
+            cursor: pointer;
+        }
+
+        .social-sidebar i:hover {
+            color: var(--fire-glow);
+            transform: scale(1.3) rotate(5deg);
+        }
+
+        /* Vault Overlay */
+        .vault-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.96);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .pin-display {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .pin-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--fire-glow);
+            transition: all 0.3s ease;
+        }
+
+        .pin-dot.active {
+            background: var(--fire-glow);
+            box-shadow: 0 0 18px var(--fire-glow);
+            transform: scale(1.2);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .key {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .key:active {
+            background: var(--fire-glow);
+            transform: scale(0.85);
+            border-color: transparent;
+        }
+
+        /* Vault View */
+        .vault-content {
+            width: 92%;
+            max-width: 480px;
+            height: 85vh;
+            background: #0d0d0d;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 77, 0, 0.5);
+            padding: 25px;
+            display: none;
+            flex-direction: column;
             overflow: hidden;
         }
-        .reel-content {
-            position: absolute;
-            transition: top 2s cubic-bezier(0.15, 0.85, 0.35, 1.2);
-        }
-        .spin-blur { filter: blur(4px); }
 
-        .btn-spin {
-            background: linear-gradient(to bottom, #10b981, #059669);
-            box-shadow: 0 4px 0 #047857;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .account-list-container {
+            flex: 1;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding-left: 5px;
         }
-        .btn-spin:active { transform: translateY(4px); box-shadow: 0 0 0 #047857; }
 
-        /* انیمیشن ها (Animations) */
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .account-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-right: 5px solid var(--fire-glow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .account-card:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .copy-btn {
+            background: var(--fire-glow);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .copy-btn:hover {
+            filter: brightness(1.2);
+        }
+
+        /* Intro Screen */
+        .entrance-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glitch-text {
+            font-size: 3.5rem;
+            font-family: 'Reem Kufi';
+            color: var(--fire-glow);
+            text-shadow: 0 0 20px var(--fire-glow);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--fire-glow); border-radius: 10px; }
     </style>
 </head>
-<body class="flex justify-center min-h-screen pb-20">
+<body>
 
-    <!-- لودینگ (Loader) -->
-    <div id="loader" class="fixed inset-0 z-50 bg-[#0a0a0a] flex flex-col items-center justify-center transition-opacity duration-500">
-        <i class="fas fa-coins text-5xl text-yellow-500 animate-bounce mb-4"></i>
-        <h1 class="text-2xl font-black text-white tracking-widest uppercase">Elite Bet</h1>
+    <!-- Entrance Screen -->
+    <div id="entrance" class="entrance-screen">
+        <div class="glitch-text">يونس</div>
     </div>
 
-    <!-- بخش ورود (Auth Screen) -->
-    <section id="auth-screen" class="hidden w-full max-w-md flex-col items-center justify-center p-6 h-screen">
-        <div class="casino-panel p-10 w-full text-center fade-in">
-            <i class="fas fa-crown text-6xl text-yellow-500 mb-6 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]"></i>
-            <h1 class="text-3xl font-black mb-2">Elite Casino</h1>
-            <p class="text-gray-400 text-sm mb-10">منصة المراهنات والكازينو الأولى. سجل دخولك لتبدأ اللعب.</p>
-            <button onclick="login()" class="w-full bg-white text-black py-4 rounded-xl font-bold flex items-center justify-center gap-3 shadow-lg hover:bg-gray-100 transition">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-                دخول باستخدام Google
-            </button>
-        </div>
-    </section>
+    <!-- Background Video (Updated) -->
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="https://b.top4top.io/m_3720u3vo50.mp4" type="video/mp4">
+    </video>
 
-    <!-- بخش اصلی برنامه (Main App) -->
-    <section id="main-screen" class="hidden w-full max-w-md flex-col">
+    <!-- Main Card -->
+    <div class="card-static">
+        <img src="https://e.top4top.io/p_3720kj9sq0.png" class="profile-img" alt="Younis">
         
-        <!-- هدر بالا (Top Header) -->
-        <header class="flex justify-between items-center p-4 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur z-40 border-b border-white/5">
-            <div class="flex items-center gap-3">
-                <img id="u-photo" class="w-10 h-10 rounded-full border border-gray-600">
-                <div>
-                    <p id="u-name" class="text-xs font-bold text-gray-300 truncate max-w-[100px]"></p>
-                    <div class="flex items-center gap-1 text-green-400 font-black text-sm">
-                        <span id="u-balance">0</span> 💎
-                    </div>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="switchTab('wallet')" class="w-10 h-10 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center"><i class="fas fa-plus"></i></button>
-                <button onclick="logout()" class="w-10 h-10 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
-        </header>
-
-        <!-- نمای ورزش (Sports Betting Tab) -->
-        <div id="tab-sports" class="tab-content p-4 space-y-4 fade-in">
-            <h2 class="text-xl font-black mb-4 flex items-center gap-2"><i class="fas fa-futbol text-green-500"></i> أبرز المباريات</h2>
+        <div class="card-content">
+            <div class="name-title">يونس</div>
+            <p class="text-[10px] text-gray-400 opacity-60 tracking-widest">DIGITAL VAULT CARD</p>
             
-            <!-- Match 1 -->
-            <div class="casino-panel p-4">
-                <div class="flex justify-between items-center mb-4 text-sm font-bold">
-                    <span class="flex items-center gap-2"><i class="fas fa-shield-alt text-gray-400"></i> ريال مدريد</span>
-                    <span class="text-gray-500 text-xs">VS</span>
-                    <span class="flex items-center gap-2">برشلونة <i class="fas fa-shield-alt text-gray-400"></i></span>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="placeBet('ريال مدريد', 1.8)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">فوز ريال</span><span class="font-black text-green-400">1.80</span></button>
-                    <button onclick="placeBet('تعادل الكلاسيكو', 3.2)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">تعادل</span><span class="font-black text-yellow-400">3.20</span></button>
-                    <button onclick="placeBet('برشلونة', 2.1)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">فوز برشا</span><span class="font-black text-green-400">2.10</span></button>
-                </div>
-            </div>
-
-            <!-- Match 2 -->
-            <div class="casino-panel p-4">
-                <div class="flex justify-between items-center mb-4 text-sm font-bold">
-                    <span class="flex items-center gap-2"><i class="fas fa-shield-alt text-gray-400"></i> مان سيتي</span>
-                    <span class="text-gray-500 text-xs">VS</span>
-                    <span class="flex items-center gap-2">أرسنال <i class="fas fa-shield-alt text-gray-400"></i></span>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="placeBet('مانشستر سيتي', 1.5)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">فوز سيتي</span><span class="font-black text-green-400">1.50</span></button>
-                    <button onclick="placeBet('تعادل الإنجليزي', 4.0)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">تعادل</span><span class="font-black text-yellow-400">4.00</span></button>
-                    <button onclick="placeBet('أرسنال', 4.5)" class="odds-btn py-3 flex flex-col items-center"><span class="text-[10px] text-gray-400">فوز أرسنال</span><span class="font-black text-green-400">4.50</span></button>
-                </div>
-            </div>
-            
-            <div class="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl text-xs text-blue-200">
-                <i class="fas fa-info-circle"></i> يتم تحديد نتيجة المباريات بعد 10 ثوانٍ من وضع الرهان لغرض اللعب.
+            <div class="mt-5 flex items-center gap-3">
+                <i class="fas fa-barcode text-2xl opacity-40"></i>
+                <div class="h-[1px] flex-1 bg-gradient-to-r from-orange-600/50 to-transparent"></div>
             </div>
         </div>
 
-        <!-- نمای کازینو (Casino Slot Tab) -->
-        <div id="tab-casino" class="tab-content hidden p-4 fade-in flex flex-col items-center justify-center mt-10">
-            <h2 class="text-2xl font-black mb-6 text-yellow-500 tracking-wider"><i class="fas fa-star"></i> MEGA SLOTS <i class="fas fa-star"></i></h2>
-            
-            <div class="slot-machine w-full mb-8">
-                <div class="slot-screen">
-                    <div class="reel"><div class="reel-content" id="reel1">💎</div></div>
-                    <div class="reel"><div class="reel-content" id="reel2">💎</div></div>
-                    <div class="reel"><div class="reel-content" id="reel3">💎</div></div>
-                </div>
-            </div>
-
-            <div class="casino-panel w-full p-4 text-center mb-6">
-                <p class="text-gray-400 text-sm mb-2">تكلفة اللفة: <span class="text-white font-bold">50 💎</span></p>
-                <div class="text-[10px] text-yellow-500 font-bold mb-4">🎁 ثلاث أشكال متشابهة = 500 جوهرة | شكلان = 100 جوهرة</div>
-                <button onclick="spinSlots()" id="spin-btn" class="btn-spin w-full py-5 rounded-2xl font-black text-2xl text-white">
-                    SPIN <i class="fas fa-sync-alt ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- نمای کیف پول (Wallet Tab) -->
-        <div id="tab-wallet" class="tab-content hidden p-4 space-y-6 fade-in mt-4">
-            <div class="casino-panel p-6 text-center">
-                <p class="text-gray-400 text-sm mb-2">رصيدك الحالي</p>
-                <h2 class="text-5xl font-black text-green-400 mb-6"><span class="bal-disp">0</span> 💎</h2>
-                <button onclick="alert('سيتم معالجة السحب المالي قريباً.')" class="w-full bg-white/10 py-3 rounded-xl font-bold hover:bg-white/20 transition">طلب سحب (Cashout)</button>
-            </div>
-
-            <div class="casino-panel p-6">
-                <h3 class="font-black text-lg mb-4 border-b border-white/10 pb-2"><i class="fas fa-credit-card text-blue-500"></i> إيداع الرصيد</h3>
-                <p class="text-xs text-gray-400 mb-4">أدخل كود الكارت وسيتم إرساله للإدارة للموافقة عليه (نفس لوحة التحكم السابقة).</p>
-                
-                <select id="dep-amount" class="w-full bg-[#0a0a0a] border border-white/10 p-3 rounded-xl mb-4 text-sm font-bold outline-none">
-                    <option value="500">حزمة 500 جوهرة</option>
-                    <option value="1500">حزمة 1,500 جوهرة</option>
-                    <option value="5000">حزمة 5,000 جوهرة</option>
-                </select>
-
-                <input type="text" id="dep-code" placeholder="*133*رقم_الكارت#" class="w-full bg-[#0a0a0a] border border-white/10 p-4 rounded-xl text-center font-mono text-lg mb-4 outline-none focus:border-green-500">
-                <button onclick="submitDeposit()" class="w-full bg-green-600 hover:bg-green-500 py-4 rounded-xl font-bold transition shadow-lg shadow-green-600/20">تأكيد الإيداع</button>
-            </div>
-        </div>
-
-        <!-- نوار پایین (Bottom Navigation) -->
-        <nav class="bottom-nav fixed bottom-0 w-full max-w-md flex justify-around p-3 pb-5 z-40">
-            <button onclick="switchTab('sports')" id="nav-sports" class="nav-item active flex flex-col items-center gap-1 w-20 transition">
-                <i class="fas fa-futbol text-xl"></i><span class="text-[10px] font-bold">رياضة</span>
-            </button>
-            <button onclick="switchTab('casino')" id="nav-casino" class="nav-item text-gray-500 flex flex-col items-center gap-1 w-20 transition">
-                <i class="fas fa-slot-machine text-xl"></i><span class="text-[10px] font-bold">كازينو</span>
-            </button>
-            <button onclick="switchTab('wallet')" id="nav-wallet" class="nav-item text-gray-500 flex flex-col items-center gap-1 w-20 transition">
-                <i class="fas fa-wallet text-xl"></i><span class="text-[10px] font-bold">المحفظة</span>
-            </button>
-        </nav>
-
-    </section>
-
-    <!-- Modal للرهان الرياضي -->
-    <div id="bet-modal" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6 backdrop-blur-sm">
-        <div class="casino-panel w-full max-w-sm p-6 text-center border-t-4 border-green-500">
-            <h3 class="font-black text-lg mb-2">تأكيد الرهان</h3>
-            <p id="bet-info" class="text-sm text-gray-400 mb-6"></p>
-            <input type="number" id="bet-amount" placeholder="مبلغ الرهان (جواهر)" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-center font-black text-xl mb-4 outline-none focus:border-green-500">
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('bet-modal').classList.add('hidden')" class="flex-1 bg-gray-800 py-3 rounded-xl font-bold">إلغاء</button>
-                <button onclick="confirmBet()" class="flex-1 bg-green-600 py-3 rounded-xl font-bold text-white shadow-lg">تأكيد <i class="fas fa-check ml-1"></i></button>
-            </div>
+        <div class="social-sidebar">
+            <i class="fab fa-instagram" onclick="window.open('https://instagram.com/7_ro7_', '_blank')"></i>
+            <i class="fab fa-snapchat" onclick="window.open('https://www.snapchat.com/add/yon_1i', '_blank')"></i>
+            <i class="fab fa-tiktok" onclick="window.open('https://tiktok.com/@_77xx_1', '_blank')"></i>
+            <i class="fab fa-whatsapp" onclick="window.open('https://wa.me/9647851214176', '_blank')"></i>
+            <i class="fas fa-vault text-orange-500 mt-2" onclick="openVault()"></i>
         </div>
     </div>
 
-    <!-- سیستم منطق (App Logic) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, increment, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Vault Screen -->
+    <div id="vaultOverlay" class="vault-overlay">
+        <div id="pinSection">
+            <h2 class="text-xl mb-10 text-center text-orange-500 font-bold">الخزينة الرقمية المحمية</h2>
+            <div class="pin-display">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <div class="keypad">
+                <div class="key" onclick="pressKey('1')">1</div>
+                <div class="key" onclick="pressKey('2')">2</div>
+                <div class="key" onclick="pressKey('3')">3</div>
+                <div class="key" onclick="pressKey('4')">4</div>
+                <div class="key" onclick="pressKey('5')">5</div>
+                <div class="key" onclick="pressKey('6')">6</div>
+                <div class="key" onclick="pressKey('7')">7</div>
+                <div class="key" onclick="pressKey('8')">8</div>
+                <div class="key" onclick="pressKey('9')">9</div>
+                <div class="key"></div>
+                <div class="key" onclick="pressKey('0')">0</div>
+                <div class="key" onclick="resetPin()"><i class="fas fa-backspace"></i></div>
+            </div>
+            <button class="mt-10 text-white/30 block mx-auto hover:text-white transition-colors" onclick="closeVault()">إغلاق</button>
+        </div>
 
-        // إعدادات فايربيس (نفس الإعدادات السابقة لضمان عمل لوحة المدير)
+        <!-- Inside Vault -->
+        <div id="vaultContent" class="vault-content">
+            <div class="flex justify-between items-center mb-6 border-b border-orange-900/50 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold">بياناتك السرية</h2>
+                    <p class="text-[10px] text-gray-500">مشفرة ومحفوظة للأبد</p>
+                </div>
+                <i class="fas fa-times cursor-pointer text-xl hover:text-orange-500" onclick="closeVault()"></i>
+            </div>
+            
+            <div class="account-list-container" id="accountsList">
+                <div class="text-center py-10 opacity-30">جاري مزامنة السحابة...</div>
+            </div>
+
+            <button class="w-full bg-orange-600/10 border border-orange-600/50 py-4 rounded-2xl mt-2 hover:bg-orange-600 transition-all font-bold" onclick="showAddForm()">
+                <i class="fas fa-plus-circle ml-2"></i> إضافة حساب للخزنة
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-orange-600 text-white px-8 py-3 rounded-full shadow-2xl opacity-0 transition-all z-[9999] pointer-events-none font-bold">
+        تم النسخ بنجاح
+    </div>
+
+    <script>
+        // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyAuWgWjxvlwVLt_nxoA0g_Z_k21Yn2MuJ8",
-            authDomain: "power-4ec4d.firebaseapp.com",
-            projectId: "power-4ec4d",
-            storageBucket: "power-4ec4d.firebasestorage.app",
-            messagingSenderId: "346740944193",
-            appId: "1:346740944193:web:087296b7dc7bcca6c7c5c0"
+            apiKey: "AIzaSyA262s_QVEBEuGmht94eXO1wEDNkBPojCE",
+            authDomain: "green-db03c.firebaseapp.com",
+            projectId: "green-db03c",
+            storageBucket: "green-db03c.firebasestorage.app",
+            messagingSenderId: "205487738976",
+            appId: "1:205487738976:web:d58ec5c46144a0a875b305"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-        
-        // استخدام نفس المعرف السابق الخاص بك لكي تظهر الطلبات في لوحة المدير الحالية
-        const GAME_APP_ID = 'we-are-here-sequential-v5';
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const appId = "younis-master-card";
 
-        let user = null;
-        let userData = { balance: 0 };
-        let activeBetInfo = null;
+        let currentPin = "";
+        const correctPin = "9966";
 
-        setPersistence(auth, browserLocalPersistence);
-
-        // --- احراز هویت (Authentication) ---
-        onAuthStateChanged(auth, async (u) => {
-            if (u) {
-                user = u;
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('main-screen').classList.flex = 'flex';
-                document.getElementById('main-screen').classList.remove('hidden');
-                initUser();
-            } else {
-                user = null;
-                document.getElementById('auth-screen').classList.flex = 'flex';
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('main-screen').classList.add('hidden');
-            }
-            setTimeout(() => document.getElementById('loader').classList.add('hidden'), 1000);
+        window.addEventListener('load', () => {
+            // Entrance handling
+            setTimeout(() => {
+                const ent = document.getElementById('entrance');
+                ent.style.transition = 'opacity 1s ease';
+                ent.style.opacity = '0';
+                setTimeout(() => ent.style.display = 'none', 1000);
+            }, 2000);
+            
+            auth.signInAnonymously().catch(e => console.error("Auth:", e));
         });
 
-        window.login = () => signInWithPopup(auth, provider);
-        window.logout = () => signOut(auth);
-
-        async function initUser() {
-            const userRef = doc(db, 'artifacts', GAME_APP_ID, 'users', user.uid, 'profile', 'data');
-            onSnapshot(userRef, (snap) => {
-                if (snap.exists()) {
-                    userData = snap.data();
-                    updateUI();
-                } else {
-                    setDoc(userRef, { balance: 500, name: user.displayName, photo: user.photoURL, uid: user.uid });
-                }
-            });
+        function openVault() {
+            document.getElementById('vaultOverlay').style.display = 'flex';
+            resetPin();
         }
 
-        function updateUI() {
-            document.getElementById('u-name').innerText = user.displayName;
-            document.getElementById('u-photo').src = user.photoURL;
-            document.getElementById('u-balance').innerText = userData.balance.toLocaleString();
-            document.querySelectorAll('.bal-disp').forEach(e => e.innerText = userData.balance.toLocaleString());
+        function closeVault() {
+            document.getElementById('vaultOverlay').style.display = 'none';
+            document.getElementById('vaultContent').style.display = 'none';
+            document.getElementById('pinSection').style.display = 'block';
         }
 
-        // --- منوی پایین (Bottom Nav Switcher) ---
-        window.switchTab = (tab) => {
-            ['sports', 'casino', 'wallet'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).classList.remove('active', 'text-brand-green');
-                document.getElementById(`nav-${t}`).classList.add('text-gray-500');
-            });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-${tab}`).classList.remove('text-gray-500');
-            document.getElementById(`nav-${tab}`).classList.add('active', 'text-green-500');
-        };
-
-        // --- بخش شرط بندی ورزشی (Sports Betting Logic) ---
-        window.placeBet = (selection, odds) => {
-            activeBetInfo = { selection, odds };
-            document.getElementById('bet-info').innerHTML = `خيار الرهان: <b class="text-white">${selection}</b> <br> العائد: <b class="text-green-400">x${odds}</b>`;
-            document.getElementById('bet-modal').classList.remove('hidden');
-        };
-
-        window.confirmBet = async () => {
-            const amt = parseInt(document.getElementById('bet-amount').value);
-            if(!amt || amt <= 0) return alert("أدخل مبلغاً صحيحاً");
-            if(userData.balance < amt) return alert("رصيدك لا يكفي");
-
-            document.getElementById('bet-modal').classList.add('hidden');
-            document.getElementById('bet-amount').value = '';
-
-            // خصم الرصيد
-            const uRef = doc(db, 'artifacts', GAME_APP_ID, 'users', user.uid, 'profile', 'data');
-            await updateDoc(uRef, { balance: increment(-amt) });
-            alert(`تم تأكيد الرهان بقيمة ${amt} جوهرة. سيتم إعلان النتيجة قريباً.`);
-
-            // محاكاة النتيجة بعد 10 ثوانٍ
-            setTimeout(async () => {
-                const win = Math.random() > 0.5; // فرصة 50%
-                if(win) {
-                    const prize = Math.floor(amt * activeBetInfo.odds);
-                    await updateDoc(uRef, { balance: increment(prize) });
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                    alert(`✅ فوز! كسبت رهانك على (${activeBetInfo.selection}) وتمت إضافة ${prize} جوهرة.`);
-                } else {
-                    alert(`❌ خسارة.. لم ينجح رهانك على (${activeBetInfo.selection}). حظاً أوفر.`);
-                }
-            }, 10000);
-        };
-
-        // --- بخش کازینو (Casino Slots Logic) ---
-        const slotSymbols = ['🍒', '🍋', '🔔', '💎', '7️⃣'];
-        const spinCost = 50;
-
-        window.spinSlots = async () => {
-            if(userData.balance < spinCost) return alert("تحتاج 50 جوهرة على الأقل للعب.");
-            
-            const btn = document.getElementById('spin-btn');
-            btn.disabled = true; btn.style.opacity = '0.5';
-
-            // خصم التكلفة
-            const uRef = doc(db, 'artifacts', GAME_APP_ID, 'users', user.uid, 'profile', 'data');
-            await updateDoc(uRef, { balance: increment(-spinCost) });
-
-            // انیمیشن چرخیدن (Animation)
-            const r1 = document.getElementById('reel1');
-            const r2 = document.getElementById('reel2');
-            const r3 = document.getElementById('reel3');
-
-            r1.classList.add('spin-blur'); r2.classList.add('spin-blur'); r3.classList.add('spin-blur');
-            
-            let counter = 0;
-            const spinInterval = setInterval(() => {
-                r1.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                r2.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                r3.innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                counter++;
-                if(counter > 20) {
-                    clearInterval(spinInterval);
-                    finishSpin(r1, r2, r3, uRef, btn);
-                }
-            }, 100);
-        };
-
-        async function finishSpin(r1, r2, r3, uRef, btn) {
-            r1.classList.remove('spin-blur'); r2.classList.remove('spin-blur'); r3.classList.remove('spin-blur');
-            
-            const res1 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-            const res2 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-            const res3 = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-
-            // لتسهيل الفوز لأغراض العرض يمكن التلاعب بالاحتمالات، لكن سنتركها عشوائية
-            r1.innerText = res1; r2.innerText = res2; r3.innerText = res3;
-
-            if (res1 === res2 && res2 === res3) {
-                // الفوز الأكبر (Jackpot)
-                confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
-                await updateDoc(uRef, { balance: increment(500) });
-                setTimeout(() => alert("MEGA WIN! 🎰 ربحت 500 جوهرة!"), 500);
-            } else if (res1 === res2 || res2 === res3 || res1 === res3) {
-                // فوز صغير
-                await updateDoc(uRef, { balance: increment(100) });
-                setTimeout(() => alert("Good Win! ✨ ربحت 100 جوهرة!"), 500);
+        function pressKey(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updatePinDisplay();
+                if (currentPin.length === 4) validatePin();
             }
-
-            btn.disabled = false; btn.style.opacity = '1';
         }
 
-        // --- بخش واریز (Wallet Deposit - Connected to Admin) ---
-        window.submitDeposit = async () => {
-            const code = document.getElementById('dep-code').value.trim();
-            const amt = parseInt(document.getElementById('dep-amount').value);
-            
-            if(!code || code.length < 5) return alert("يرجى إدخال كود الكارت الصحيح.");
+        function updatePinDisplay() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, i) => {
+                if (i < currentPin.length) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }
+
+        function resetPin() {
+            currentPin = "";
+            updatePinDisplay();
+        }
+
+        function validatePin() {
+            if (currentPin === correctPin) {
+                document.getElementById('pinSection').style.display = 'none';
+                document.getElementById('vaultContent').style.display = 'flex';
+                loadVaultData();
+            } else {
+                showToast("الرمز غير صحيح");
+                setTimeout(resetPin, 500);
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = '1';
+            t.style.bottom = '20px';
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.bottom = '10px';
+            }, 2500);
+        }
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+
+        function copyFormatted(email, pass) {
+            const formattedText = `الحساب: ${email}\nكلمة السر: ${pass}`;
+            copyToClipboard(formattedText);
+            showToast("تم النسخ بنجاح");
+        }
+
+        async function loadVaultData() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const list = document.getElementById('accountsList');
+            list.innerHTML = '<div class="text-center py-10 opacity-40">جاري تحميل خزنتك...</div>';
 
             try {
-                // إرسال الطلب لنفس مسار تطبيق "نحن هنا" لكي تراه في لوحة المدير
-                await addDoc(collection(db, 'artifacts', GAME_APP_ID, 'public', 'data', 'deposit_requests'), {
-                    userId: user.uid,
-                    userName: user.displayName,
-                    userDisplayId: userData.displayId || 'CasinoUser',
-                    cardCode: code,
-                    gems: amt,
-                    timestamp: serverTimestamp()
-                });
-                alert("تم الإرسال للإدارة بنجاح. سيتم تحويل الجواهر فور التأكد.");
-                document.getElementById('dep-code').value = '';
-            } catch(e) {
-                alert("حدث خطأ في الاتصال: " + e.message);
-            }
-        };
+                const snapshot = await db.collection('artifacts').doc(appId)
+                    .collection('users').doc(user.uid).collection('vault')
+                    .orderBy('timestamp', 'desc').get();
+                
+                list.innerHTML = "";
+                if (snapshot.empty) {
+                    list.innerHTML = '<div class="text-center py-20 opacity-20">خزنتك لا تحتوي على حسابات بعد</div>';
+                    return;
+                }
 
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const card = document.createElement('div');
+                    card.className = "account-card";
+                    card.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center">
+                                <i class="fas fa-key text-orange-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-white">${data.platform}</div>
+                                <div class="text-[10px] text-gray-500 truncate w-32">${data.email}</div>
+                            </div>
+                        </div>
+                        <div class="copy-btn" onclick="copyFormatted('${data.email}', '${data.password}')">نسخ البيانات</div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = "تعذر تحميل البيانات السحابية";
+            }
+        }
+
+        async function showAddForm() {
+            const platform = prompt("اسم التطبيق أو المنصة:");
+            if (!platform) return;
+            const email = prompt("البريد الإلكتروني أو رقم الهاتف:");
+            const password = prompt("كلمة السر:");
+
+            if (email && password) {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                try {
+                    await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).collection('vault').add({
+                        platform,
+                        email,
+                        password,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    loadVaultData();
+                    showToast("تم الحفظ في السحابة");
+                } catch (e) {
+                    alert("خطأ في الاتصال، حاول لاحقاً");
+                }
+            }
+        }
     </script>
 </body>
 </html>
